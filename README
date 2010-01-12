@@ -1,0 +1,13 @@
+Chameleon Boot Loader Project
+=============================
+
+Chameleon is a boot loader to boot OS X on compatible, standard PC-hardware.
+It's based on Apple's boot-132 project and various components and additions
+from the hackintosh community.
+  
+The Chameleon Boot Loader is released under the terms and conditions of Apple
+Public Source License (see APPLE_LICENSE).
+
+This project is divided into so far:
+	- Booter:	the bootloader itself
+	- PrefPane:	a upcoming Mac OS X Preferences Pane

@@ -541,6 +541,9 @@ static void setupEfiGetOverrideConfig( void )
 	if (getValueForKey("SMUUID", &value, &len, &bootInfo->smbiosConfig) && stringToUUID(value, uuid) == 0) {
 		verbose("Using SMUUID='%s' from smbios.plist as System-ID\n", value);
 		memcpy(SystemID, uuid, UUID_LEN);
+	} else if (getValueForKey(kSystemID, &value, &len, &bootInfo->bootConfig) && stringToUUID(value, uuid) == 0) {
+		verbose("Using SystemID='%s' from com.apple.Boot.plist as System-ID\n", value);
+		memcpy(SystemID, uuid, UUID_LEN);
 	} else if (getSMBIOSUUID(uuid)) {
 		verbose("Using original SMBIOS UUID='%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x' as System-ID\n",
 			uuid[0],uuid[1],uuid[2],uuid[3],uuid[4],uuid[5],uuid[6],uuid[7],

@@ -69,6 +69,8 @@
 #define kDropSSDT		"DropSSDT"		/* dsdt_patcher.c */
 #define kRestartFix		"RestartFix"		/* dsdt_patcher.c */
 #define kEfiPlatformSystemID	"EfiPlatformSystemID"	/* fake_efi.c */
+#define kSMBIOS			"SMBIOS"		/* fake_efi.c */
+#define kSystemID		"System-ID"		/* fake_efi.c */
 #define kUseNvidiaROM		"UseNvidiaROM"		/* nvidia.c */
 #define kVBIOS			"VBIOS"			/* nvidia.c */
 #define kPCIRootUID		"PCIRootUID"		/* pci_root.c */
@@ -83,7 +85,6 @@
 #define kDefaultPartition	"Default Partition"	/* sys.c */
 #define kDeviceProperties	"device-properties"	/* device_inject.c */
 #define kHidePartition		"Hide Partition"	/* disk.c */
-#define kSMBIOS			"SMBIOS"		/* fake_efi.c */
 
 /*
  * Flags to the booter or kernel

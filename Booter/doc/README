@@ -1,0 +1,97 @@
+
+                        Chameleon Boot Loader
+                        =====================
+
+  What is it?
+  -----------
+
+  Chameleon is combination of various boot loader components. It is based
+  on David Elliott's fake EFI implementation added to Apple's boot-132
+  project. Chameleon is extended with the following key features:
+  
+
+  Features
+  --------
+  
+   - Device Property Injection via device-properties string in com.apple.Boot.plist
+   - hybrid boot0+boot1h loaders for both MBR and GPT partitioned disks.
+   - automatic FSB detection code even for recent AMD CPUs.
+   - Apple Software RAID support.
+   - stage2 loader (boot) can be placed as a regular file in the boot
+     partition's root folder. It has precedence over the embedded
+     startupfile.
+     
+
+                        Installation
+                        ============
+  
+  Normal Install (non-RAID):
+  --------------------------
+  
+  Suppose that your installation is on /dev/disk0s2
+  
+   - Install boot0 to the MBR:
+   		sudo fdisk -f boot0 -u -y /dev/rdisk0
+  
+   - Install boot1h to the partition's bootsector:
+  		sudo dd if=boot1h of=/dev/rdisk0s2
+  
+   - Install boot to the partition's root directory:
+  		sudo cp boot /
+  
+  No need to use startupfiletool anymore!
+  
+  
+  RAID Install:
+  -------------
+  
+  Suppose that your installation is on /dev/disk3, which is either a mirror- or a
+  stripeset consisting of /dev/disk0 and /dev/disk1
+
+  Mac OS X creates a small helper partition at the end of each RAID member disk,
+  namely /dev/disk0s3 and /dev/disk1s3
+  
+   - Install boot0 to the MBR of both disks:
+  		sudo fdisk -f boot0 -u -y /dev/rdisk0
+  		sudo fdisk -f boot0 -u -y /dev/rdisk1
+  
+   - Install boot1h to the bootsector of each boot partition:
+  		sudo dd if=boot1h of=/dev/rdisk0s3
+  		sudo dd if=boot1h of=/dev/rdisk1s3
+  
+   - Install boot to both helper partition's root directories.
+  		diskutil mount disk0s3
+  		cp boot /Volumes/Boot\ OSX
+  		diskutil unmount disk0s3
+  		diskutil mount disk1s3
+  		cp boot /Volumes/Boot\ OSX
+  		diskutil unmount disk1s3
+  
+   - Add "rd=uuid boot-uuid=506D8F03-0596-32D8-BE0B-E3A4E7D5C72A" to your kernel flags
+     (replace with your root volume's UUID; find out using "Disk Utility.app", right
+	 click on your root volume, then Get Info"):
+  		nano /Library/Preferences/SystemConfiguration/com.apple.Boot.plist
+  		touch /System/Library/Extensions
+
+
+  Support:
+  --------
+  
+  If you have any questions, issues etc. feel free to join us
+  at irc.voodooprojects.org #chameleon
+  
+
+  Source Code
+  -----------
+
+  For downloading the source code please visit the project page at
+  http://chameleon.osx86.hu
+
+
+  Licensing
+  ---------
+
+  Chameleon is released under the terms and conditions of
+  Apple Public Source License (see APPLE_LICENSE).
+  To use "Chameleon" for commercial purposes please contact us at:
+  http://chameleon.osx86.hu/contact

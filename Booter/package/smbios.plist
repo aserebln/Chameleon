@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>SMbiosversion</key>
+        <string>MP31.88Z.00C1.B00.0802091544</string>
+        <key>SMmanufacter</key>
+        <string>Apple Inc.</string>
+        <key>SMproductname</key>
+        <string>MacPro3,1</string>
+        <key>SMsystemversion</key>
+        <string>1.0</string>
+        <key>SMserial</key>
+        <string>W87234JHYA4</string>
+        <key>SMexternalclock</key>
+        <string>333</string>
+        <key>SMmaximalclock</key>
+        <string>3000</string>
+        <key>SMmemtype</key>
+        <string>19</string>
+        <key>SMmemspeed</key>
+        <string>800</string>
+        <key>SMmemmanufacter_1</key>
+        <string>0xAD00000000000000</string>
+        <key>SMmemserial_1</key>
+        <string>0x00001020</string>
+        <key>SMmempart_1</key>
+        <string>0x48594D503131325336344350362D59352020</string>
+        <key>SMmemmanufacter_2</key>
+        <string>0xAD00000000000000</string>
+        <key>SMmemserial_2</key>
+        <string>0x00003021</string>
+        <key>SMmempart_2</key>
+        <string>0x48594D503131325336344350362D59352020</string>
+        <key>SMmemmanufacter_3</key>
+        <string>0xAD00000000000000</string>
+        <key>SMmemserial_3</key>
+        <string>0x00003021</string>
+        <key>SMmempart_3</key>
+        <string>0x48594D503131325336344350362D59352020</string>
+        <key>SMmemmanufacter_4</key>
+        <string>0xAD00000000000000</string>
+        <key>SMmemserial_4</key>
+        <string>0x00003021</string>
+        <key>SMmempart_4</key>
+        <string>0x48594D503131325336344350362D59352020</string>
+</dict>
+</plist>

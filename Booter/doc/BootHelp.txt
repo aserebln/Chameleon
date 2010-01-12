@@ -1,0 +1,91 @@
+The boot: prompt waits for you to type advanced startup options.
+If you don't type anything, the computer continues starting up normally. It
+uses the kernel and configuration files on the startup device, which it also
+uses as the root device. 
+
+Advanced startup options use the following syntax:
+
+    [device]<kernel> [arguments]
+
+Example arguments include
+
+ device: rd=<BSD device name>       (e.g. rd=disk0s2)
+         rd=*<IODeviceTree path>    (e.g. rd=*/PCI0@0/CHN0@0/@0:1)
+
+ kernel: kernel name                (e.g. "mach_kernel" - must be in "/" )
+
+ flags: -v (verbose)    -s (single user mode), 
+        -x (safe mode)  -F (ignore boot configuration file)
+
+ "Graphics Mode"="WIDTHxHEIGHTxDEPTH" (e.g. "1024x768x32")
+
+ kernel flags                       (e.g. debug=0x144)
+ io=0xffffffff                      (defined in IOKit/IOKitDebug.h)
+
+Example: mach_kernel rd=disk0s1 -v "Graphics Mode"="1920x1200x32"
+
+If the computer won't start up properly, you may be able to start it up using
+safe mode.  Type -x to start up in safe mode, which ignores all cached
+driver files.
+
+Special booter hotkeys:
+  F5            Rescans optical drive.
+  F10           Scans and displays all BIOS accessible drives.
+  
+Special booter commands:
+  ?memory       Displays information about the computer's memory.
+  ?video        Displays VESA video modes supported by the computer's BIOS.
+  ?norescan     Leaves optical drive rescan mode.
+
+Additional useful command-line options:
+  config=<file>             Use an alternate Boot.plist file.
+
+Options useful in the com.apple.Boot.plist file:
+  Wait=Yes|No               Prompt for a key press before starting the kernel.
+  "Quiet Boot"=Yes|No       Use quiet boot mode (no messages or prompt).
+  Timeout=8                 Number of seconds to pause at the boot: prompt.
+  "Instant Menu"=Yes        Force displaying the partition selection menu. 
+
+  "Default Partition"       Sets the default boot partition,
+    =hd(x,y)                  where 'x' is the disk number, 'y' the partition number.
+  "Hide Partition"          Remove unwanted partition(s) from the boot menu.
+    =hd(x,y) [hd(m,n)]
+
+  GUI=No                    Disable the GUI (enabled by default).
+  "Boot Banner"=Yes|No      Show boot banner in GUI mode (enabled by default).
+  "Legacy Logo"=Yes|No      Use the legacy grey apple logo (disabled by default).
+  
+  PciRoot=<value>           Use an alternate value for PciRoot. (default value: 0).
+
+  GraphicsEnabler=Yes|No    Automatic device-properties generation for graphics cards.
+  VideoROM=<file>           Use an alternate ROM image (default path: /NVIDIA.ROM).
+  VBIOS=Yes|No              Inject VBIOS to device-properties.
+
+  EthernetBuiltIn=Yes|No    Automatic "built-in"=yes device-properties generation
+                            for ethernet interfaces.
+
+  USBBusFix=Yes             Enable the EHCI and UHCI fixes (disabled by default).
+  EHCIacquire=Yes           Enable the EHCI fix (disabled by default).
+  UHCIreset=Yes             Enable the UHCI fix (disabled by default).
+
+  Wake=No                   Disable wake up after hibernation (enbaled by default).
+  ForceWake=Yes             Force using the sleepimage (disabled by default).
+  WakeImage=<file>          Use an alternate sleepimage file 
+                              (default path is /private/var/vm/sleepimage).
+
+  DropSSDT=Yes              Skip the SSDT tables while relocating the ACPI tables.
+  DSDT=<file>               Use an alternate DSDT.aml file 
+                              (default path: /DSDT.aml /Extra/DSDT.aml)
+
+  SMBIOS=<file>             Use an alternate smbios.plist file 
+                              (default path: /smbios.plist /Extra/smbios.plist
+                               bt(0,0)/Extra/smbios.plist).
+
+  SMBIOSdefaults=No         Don't use the Default values for SMBIOS overriding
+                              if smbios.plist doesn't exist, factory
+                              values are kept.
+
+  "Scan Single Drive"       Scan the drive only where the booter got loaded from.
+    =Yes|No                 Fix rescan issues when using a DVD reader in AHCI mode. 
+  Rescan=Yes                Enable CD-ROM rescan mode.
+  "Rescan Prompt"=Yes       Prompts for enable CD-ROM rescan mode.

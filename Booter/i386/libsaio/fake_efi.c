@@ -362,7 +362,7 @@ static void setupEfiDeviceTree(void)
 	SystemType[0] = 1;
 	if (getValueForKey(kSystemType, &value, &len, &bootInfo->bootConfig) && value != NULL) {
 		SystemType[0] = (unsigned char) strtoul(value, NULL, 10);
-		if (SystemType[0] != 1 || SystemType[0] != 2) {
+		if (SystemType[0] != 1 && SystemType[0] != 2) {
 			verbose("Error: system-type must be 1 (desktop) or 2 (portable). Defaulting to 1!\n");
 			SystemType[0] = 1;
 		}

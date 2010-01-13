@@ -68,9 +68,9 @@
 #define kDSDT			"DSDT"			/* dsdt_patcher.c */
 #define kDropSSDT		"DropSSDT"		/* dsdt_patcher.c */
 #define kRestartFix		"RestartFix"		/* dsdt_patcher.c */
-#define kEfiPlatformSystemID	"EfiPlatformSystemID"	/* fake_efi.c */
 #define kSMBIOS			"SMBIOS"		/* fake_efi.c */
-#define kSystemID		"System-ID"		/* fake_efi.c */
+#define kSystemID		"system-id"		/* fake_efi.c */
+#define kSystemType		"system-type"		/* fake_efi.c */
 #define kUseNvidiaROM		"UseNvidiaROM"		/* nvidia.c */
 #define kVBIOS			"VBIOS"			/* nvidia.c */
 #define kPCIRootUID		"PCIRootUID"		/* pci_root.c */

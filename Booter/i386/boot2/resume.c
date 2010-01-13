@@ -170,7 +170,14 @@ void HibernateBoot(char *image_filename)
 		previewTotalSectors = 0;
 		previewLoadedSectors = 0;
 		previewSaveunder = 0;		
+#if 0
+		AsereBLN:
+		check_vga_nvidia() didn't work as expected (recursion level > 0 & return value).
+		Unforutnaltely I cannot find a note why to switch back to text mode for nVidia cards only
+		and because it check_vga_nvidia does not work (cards normally are behind a bridge) I will
+		remove it completely
 		setVideoMode( VGA_TEXT_MODE, 0 );
+#endif
 	}
 	else
 		ReadFileAtOffset (image_filename, (char *)buffer, sizeof(IOHibernateImageHeader), imageSize);

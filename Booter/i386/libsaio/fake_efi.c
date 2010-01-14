@@ -367,6 +367,7 @@ static void setupEfiDeviceTree(void)
 			SystemType[0] = 1;
 		}
 	}
+	verbose("Using system-type=0x%02x\n", SystemType[0]);
 	DT__AddProperty(node, SystemType_prop, sizeof(SystemType), &SystemType);
 
 	/* We could also just do DT__FindNode("/efi/platform", true)

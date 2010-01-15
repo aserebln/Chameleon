@@ -407,7 +407,6 @@ static void setupEfiDeviceTree(void)
 
 	/* Export system-id. Can be disabled with system-id=No in com.apple.Boot.plist */
 	if (!getValueForKey(kSystemID, &value, &len, &bootInfo->bootConfig) || (value[0] != 'N' && value[0] != 'n')) {
-		printf(">>> adding system-id\n");
 		DT__AddProperty(efiPlatformNode, SystemID_prop, sizeof(SystemID), &SystemID);
 	}
 	/* Export SystemSerialNumber if present */

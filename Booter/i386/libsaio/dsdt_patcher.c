@@ -235,13 +235,7 @@ int setupAcpi(void)
 						fadt_mod->X_DSDT=(uint32_t)new_dsdt;
 
 					DBG("New DSDT @%x,%x\n",fadt_mod->DSDT,fadt_mod->X_DSDT);
-#if 0
-					// PM_Profile does not exists in ACPI1.0
-					if (fadt_mod->PM_Profile != Platform.Type) {
-						verbose("FACP: changing PM_Profile from 0x%02x->0x%02x\n", fadt_mod->PM_Profile, Platform.Type);
-						fadt_mod->PM_Profile = Platform.Type;
-					}
-#endif
+
 					// Correct the checksum
 					fadt_mod->Checksum=0;
 					fadt_mod->Checksum=256-checksum8(fadt_mod,fadt_mod->Length);
@@ -351,7 +345,7 @@ int setupAcpi(void)
 
 						DBG("New DSDT @%x,%x\n",fadt_mod->DSDT,fadt_mod->X_DSDT);
 
-						// Patch system-type into Model
+						// Patch system-type into PM_Profile
 						if (fadt_mod->PM_Profile != Platform.Type) {
 							verbose("FACPV2: changing PM_Profile from 0x%02x->0x%02x\n", fadt_mod->PM_Profile, Platform.Type);
 							fadt_mod->PM_Profile = Platform.Type;

@@ -18,61 +18,58 @@
 #define ACPI_SIGNATURE_UINT64_LE UINT64_LE_FROM_CHARS('R','S','D',' ','P','T','R',' ')
 
 /* Per ACPI 3.0a spec */
-
-// TODO Migrate
 struct acpi_2_rsdp {
-    char            Signature[8];
-    uint8_t         Checksum;
-    char            OEMID[6];
-    uint8_t         Revision;
-    uint32_t        RsdtAddress;
-    uint32_t        Length;
-    uint64_t        XsdtAddress;
-    uint8_t         ExtendedChecksum;
-    char            Reserved[3];
+	char		Signature[8];
+	uint8_t		Checksum;
+	char		OEMID[6];
+	uint8_t		Revision;
+	uint32_t	RsdtAddress;
+	uint32_t	Length;
+	uint64_t	XsdtAddress;
+	uint8_t		ExtendedChecksum;
+	char		Reserved[3];
 } __attribute__((packed));
 
-// TODO Migrate
 struct acpi_2_rsdt {
-	char            Signature[4];
-	uint32_t        Length;
-	uint8_t         Revision;
-	uint8_t         Checksum;
-	char            OEMID[6];
-	char            OEMTableId[8];
-	uint32_t        OEMRevision;
-	uint32_t        CreatorId;
-	uint32_t        CreatorRevision;
+	char		Signature[4];
+	uint32_t	Length;
+	uint8_t		Revision;
+	uint8_t		Checksum;
+	char		OEMID[6];
+	char		OEMTableId[8];
+	uint32_t	OEMRevision;
+	uint32_t	CreatorId;
+	uint32_t	CreatorRevision;
 } __attribute__((packed));
 
-// TODO Migrate
 struct acpi_2_xsdt {
-	char            Signature[4];
-	uint32_t        Length;
-	uint8_t         Revision;
-	uint8_t         Checksum;
-	char            OEMID[6];
-	char            OEMTableId[8];
-	uint32_t        OEMRevision;
-	uint32_t        CreatorId;
-	uint32_t        CreatorRevision;
+	char		Signature[4];
+	uint32_t	Length;
+	uint8_t		Revision;
+	uint8_t		Checksum;
+	char		OEMID[6];
+	char		OEMTableId[8];
+	uint32_t	OEMRevision;
+	uint32_t	CreatorId;
+	uint32_t	CreatorRevision;
 } __attribute__((packed));
 
-// TODO Migrate
 struct acpi_2_fadt {
-	char            Signature[4];
-	uint32_t        Length;
-	uint8_t         Revision;
-	uint8_t         Checksum;
-	char            OEMID[6];
-	char            OEMTableId[8];
-	uint32_t        OEMRevision;
-	uint32_t        CreatorId;
-	uint32_t        CreatorRevision;
-	uint32_t        FIRMWARE_CTRL;
-	uint32_t        DSDT;
+	char		Signature[4];
+	uint32_t	Length;
+	uint8_t		Revision;
+	uint8_t		Checksum;
+	char		OEMID[6];
+	char		OEMTableId[8];
+	uint32_t	OEMRevision;
+	uint32_t	CreatorId;
+	uint32_t	CreatorRevision;
+	uint32_t	FACS;
+	uint32_t	DSDT;
+	uint8_t		Model;
+	uint8_t		PM_Profile;
 	/*We absolutely don't care about theese fields*/
-	uint8_t		notimp1[68];
+	uint8_t		notimp1[66];
 	/*Reset Fix*/
 	uint32_t	Flags;
 	uint8_t		Reset_SpaceID;

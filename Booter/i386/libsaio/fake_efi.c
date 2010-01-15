@@ -297,7 +297,6 @@ static EFI_CHAR16 Model[MAX_MODEL_LEN];
 static int ModelLength = 0;
 static char Model_prop[] = "Model";
 
-static EFI_CHAR8 SystemType[1];
 static char SystemType_prop[] = "system-type";
 
 /*==========================================================================
@@ -349,26 +348,14 @@ static void setupEfiDeviceTree(void)
 	Node		*node;
 	const char	*value;
 	int		len;
-	bool		doit;
 
 	if ((node = DT__FindNode("/", false)) == NULL) {
 		stop("Couldn't find EFI root node");
 	}
 
-	/* Export system-type. Allowed values are:
-	 * 0x01 for desktop computer (default)
-	 * 0x02 for portable computers
-	 */
-	SystemType[0] = 1;
-	if (getValueForKey(kSystemType, &value, &len, &bootInfo->bootConfig) && value != NULL) {
-		SystemType[0] = (unsigned char) strtoul(value, NULL, 10);
-		if (SystemType[0] != 1 && SystemType[0] != 2) {
-			verbose("Error: system-type must be 1 (desktop) or 2 (portable). Defaulting to 1!\n");
-			SystemType[0] = 1;
-		}
-	}
-	verbose("Using system-type=0x%02x\n", SystemType[0]);
-	DT__AddProperty(node, SystemType_prop, sizeof(SystemType), &SystemType);
+	/* Export system-type */
+	verbose("Using system-type=0x%02x\n", Platform.Type);
+	DT__AddProperty(node, SystemType_prop, sizeof(Platform.Type), &Platform.Type);
 
 	/* We could also just do DT__FindNode("/efi/platform", true)
 	 * But I think eventually we want to fill stuff in the efi node
@@ -419,9 +406,8 @@ static void setupEfiDeviceTree(void)
 	}
 
 	/* Export system-id. Can be disabled with system-id=No in com.apple.Boot.plist */
-	doit = true;
-	getBoolForKey(kSystemID, &doit, &bootInfo->bootConfig);
-	if (doit) {
+	if (!getValueForKey(kSystemID, &value, &len, &bootInfo->bootConfig) || (value[0] != 'N' && value[0] != 'n')) {
+		printf(">>> adding system-id\n");
 		DT__AddProperty(efiPlatformNode, SystemID_prop, sizeof(SystemID), &SystemID);
 	}
 	/* Export SystemSerialNumber if present */

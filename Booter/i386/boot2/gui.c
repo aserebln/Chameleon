@@ -106,8 +106,8 @@ image_t images[] = {
 	{.name = "text_scroll_prev",			.image = NULL},
 	{.name = "text_scroll_next",			.image = NULL},
 
-	{.name = "font_small",				.image = NULL},
 	{.name = "font_console",			.image = NULL},
+	{.name = "font_small",				.image = NULL},
 };
 
 int imageCnt = 0;

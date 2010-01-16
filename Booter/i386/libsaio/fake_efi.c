@@ -549,18 +549,18 @@ static void setupEfiGetOverrideConfig( void )
 		verbose("No SMBIOS replacement found\n");
 	}
 	if (getValueForKey("SMUUID", &value, &len, &bootInfo->smbiosConfig) && value != NULL && stringToUUID(value, uuid) == 0) {
-		verbose("Using SMUUID='%s' from smbios.plist as System-ID\n", value);
+		verbose("Using SMUUID='%s' from smbios.plist as system-id\n", value);
 		memcpy(SystemID, uuid, UUID_LEN);
 	} else if (getValueForKey(kSystemID, &value, &len, &bootInfo->bootConfig) && value != NULL && value[0] != 'N' && value[0] != 'n' && stringToUUID(value, uuid) == 0) {
-		verbose("Using SystemID='%s' from com.apple.Boot.plist as System-ID\n", value);
+		verbose("Using system-id='%s' from com.apple.Boot.plist as system-id\n", value);
 		memcpy(SystemID, uuid, UUID_LEN);
 	} else if (getSMBIOSUUID(uuid)) {
-		verbose("Using original SMBIOS UUID='%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x' as System-ID\n",
+		verbose("Using original SMBIOS UUID='%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x' as system-id\n",
 			uuid[0],uuid[1],uuid[2],uuid[3],uuid[4],uuid[5],uuid[6],uuid[7],
 			uuid[8],uuid[9],uuid[10],uuid[11],uuid[12],uuid[13],uuid[14],uuid[15]);
 		memcpy(SystemID, uuid, UUID_LEN);
 	} else {
-		verbose("Using builtin default UUID as System-ID\n");
+		verbose("Using builtin default UUID as system-id\n");
 	}
 	if (getValueForKey("SMserial", &value, &len, &bootInfo->smbiosConfig)) {
 		if (len < MAX_SERIAL_LEN) {

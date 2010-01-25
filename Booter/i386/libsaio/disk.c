@@ -77,6 +77,16 @@ typedef struct gpt_ent gpt_ent;
 #include "efi.h"
 #include "efi_tables.h"
 
+#ifndef DEBUG_DISK
+#define DEBUG_DISK 0
+#endif
+
+#if DEBUG_DISK
+#define DBG(x...)		printf(x)
+#else
+#define DBG(x...)
+#endif
+
 #define BPS              512     /* sector size of the device */
 #define PROBEFS_SIZE     BPS * 4 /* buffer size for filesystem probe */
 #define CD_BPS           2048    /* CD-ROM block size */
@@ -157,7 +167,7 @@ static int getDriveInfo( int biosdev,  struct driveInfo *dip )
 	cc = get_drive_info(biosdev, &cached_di);
         if (cc < 0) {
 	    cached_di.valid = 0;
-            DEBUG_DISK(("get_drive_info returned error\n"));
+            DBG("get_drive_info returned error\n");
 	    return (-1); // BIOS call error
 	}
     }
@@ -246,7 +256,7 @@ static int Biosread( int biosdev, unsigned long long secno )
     }
     divisor = bps / BPS;
 
-    DEBUG_DISK(("Biosread dev %x sec %d bps %d\n", biosdev, secno, bps));
+    DBG("Biosread dev %x sec %d bps %d\n", biosdev, secno, bps);
 
     // To read the disk sectors, use EBIOS if we can. Otherwise,
     // revert to the standard BIOS calls.
@@ -357,15 +367,14 @@ static int readBytes( int biosdev, unsigned long long blkno,
     int    error;
     int    copy_len;
 
-    DEBUG_DISK(("%s: dev %x block %x [%d] -> 0x%x...", __FUNCTION__,
-                biosdev, blkno, byteCount, (unsigned)cbuf));
+    DBG("%s: dev %x block %x [%d] -> 0x%x...", __FUNCTION__, biosdev, blkno, byteCount, (unsigned)cbuf);
 
     for ( ; byteCount; cbuf += copy_len, blkno++ )
     {
         error = Biosread( biosdev, blkno );
         if ( error )
         {
-            DEBUG_DISK(("error\n"));
+            DBG("error\n");
             return (-1);
         }
 
@@ -375,7 +384,7 @@ static int readBytes( int biosdev, unsigned long long blkno,
         byteoff = 0;
     }
 
-    DEBUG_DISK(("done\n"));
+    DBG("done\n");
 
     return 0;    
 }
@@ -532,8 +541,7 @@ static BVRef newFDiskBVRef( int biosdev, int partno, unsigned int blkoff,
             {
                 // filesystem probe failed.
 
-                DEBUG_DISK(("%s: failed probe on dev %x part %d\n",
-                            __FUNCTION__, biosdev, partno));
+                DBG("%s: failed probe on dev %x part %d\n", __FUNCTION__, biosdev, partno);
 
                 (*bvr->bv_free)(bvr);
                 bvr = NULL;
@@ -604,8 +612,7 @@ BVRef newAPMBVRef( int biosdev, int partno, unsigned int blkoff,
             {
                 // filesystem probe failed.
 
-                DEBUG_DISK(("%s: failed probe on dev %x part %d\n",
-                            __FUNCTION__, biosdev, partno));
+                DBG("%s: failed probe on dev %x part %d\n", __FUNCTION__, biosdev, partno);
 
                 (*bvr->bv_free)(bvr);
                 bvr = NULL;
@@ -690,8 +697,7 @@ BVRef newGPTBVRef( int biosdev, int partno, unsigned int blkoff,
             {
                 // filesystem probe failed.
 
-                DEBUG_DISK(("%s: failed probe on dev %x part %d\n",
-                            __FUNCTION__, biosdev, partno));
+                DBG("%s: failed probe on dev %x part %d\n", __FUNCTION__, biosdev, partno);
 
                 (*bvr->bv_free)(bvr);
                 bvr = NULL;
@@ -764,8 +770,7 @@ static BVRef diskScanFDiskBootVolumes( int biosdev, int * countPtr )
 
             while ( getNextFDiskPartition( biosdev, &partno, &part ) )
             {
-                DEBUG_DISK(("%s: part %d [%x]\n", __FUNCTION__,
-                            partno, part->systid));
+                DBG("%s: part %d [%x]\n", __FUNCTION__, partno, part->systid);
                 bvr = 0;
 
                 switch ( part->systid )
@@ -1593,13 +1598,11 @@ BVRef newFilteredBVChain(int minBIOSDev, int maxBIOSDev, unsigned int allowFlags
        * Looking for "Hide Partition" entries in "hd(x,y) hd(n,m)" format
        * to be able to hide foreign partitions from the boot menu.
        */
-			if ( (newBVR->flags & kBVFlagForeignBoot)
-					&& getValueForKey(kHidePartition, &val, &len, &bootInfo->bootConfig)
-				 )
-    	{
+	if (getValueForKey(kHidePartition, &val, &len, &bootInfo->bootConfig) && value != NULL) {
     	  sprintf(devsw, "hd(%d,%d)", BIOS_DEV_UNIT(newBVR), newBVR->part_no);
-    	  if (strstr(val, devsw) != NULL)
-          newBVR->visible = false;
+    	  if (strstr(val, devsw) != NULL) {
+            newBVR->visible = false;
+	  }
     	}
 
       /*
@@ -1618,13 +1621,13 @@ BVRef newFilteredBVChain(int minBIOSDev, int maxBIOSDev, unsigned int allowFlags
         bvCount++;
     }
   }
-
-#if DEBUG
+#if DEBUG_DISK
   for (bvr = chain; bvr; bvr = bvr->next)
   {
     printf(" bvr: %d, dev: %d, part: %d, flags: %d, vis: %d\n", bvr, bvr->biosdev, bvr->part_no, bvr->flags, bvr->visible);
   }
   printf("count: %d\n", bvCount);
+  printf("(Press a key to continue...)\n");
   getc();
 #endif
 

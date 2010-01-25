@@ -318,8 +318,8 @@ static struct nv_chipsets_t NVKnownChipsets[] = {
 	{ 0x10DE06EB, "Quadro NVS 160M" },
 	{ 0x10DE0A20, "GeForce GT220" },
 	{ 0x10DE0A60, "GeForce G210" },
-	{ 0x10DE0A65, "GeForce 210" }
-	{ 0x10DE0CA3, "GeForce GT240" },
+	{ 0x10DE0A65, "GeForce 210" },
+	{ 0x10DE0CA3, "GeForce GT240" }
 };
 
 static uint16_t swap16(uint16_t x)

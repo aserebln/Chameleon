@@ -84,6 +84,16 @@ const char *nvidia_device_type[]	=	{ "device_type",	"NVDA,Parent" };
 const char *nvidia_name_0[]		=	{ "@0,name",		"NVDA,Display-A" };
 const char *nvidia_name_1[]		=	{ "@1,name",		"NVDA,Display-B" };
 const char *nvidia_slot_name[]		=	{ "AAPL,slot-name",	"Slot-1" };
+#if 0
+const char *nvidia_compatible_2[]	=	{ "@2,compatible",	"NVDA,sensor-parent" };
+const char *nvidia_device_type_2[]	=	{ "@2,device_type",	"NVDA,gpu-diode" };
+const char *nvidia_name_2[]		=	{ "@2,name",		"sensor-parent" };
+const char *nvidia_adress_cells_2[]	=	{ "@2,#adress-cells",	"0x01000000" };
+const char *nvidia_size_cells_2[]	=	{ "@2,#size-cells",	"0x00000000" };
+const char *nvidia_hwctrl_params_2[]	=	{ "@2,hwctrl-params-version",	"0x02000000" };
+const char *nvidia_hwsensor_params_2[]	=	{ "@2,hwsensor-params-version",	"0x02000000" };
+const char *nvidia_reg_2[]		=	{ "@2,reg",		"0x02000000" };
+#endif
 
 static uint8_t default_NVCAP[]= {
 	0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0d, 0x00,
@@ -309,6 +319,7 @@ static struct nv_chipsets_t NVKnownChipsets[] = {
 	{ 0x10DE0A20, "GeForce GT220" },
 	{ 0x10DE0A60, "GeForce G210" },
 	{ 0x10DE0A65, "GeForce 210" }
+	{ 0x10DE0CA3, "GeForce GT240" },
 };
 
 static uint16_t swap16(uint16_t x)
@@ -574,6 +585,24 @@ static int devprop_add_nvidia_template(struct DevPropDevice *device)
 		return 0;
 	if(!DP_ADD_TEMP_VAL(device, nvidia_device_type))
 		return 0;
+#if 0
+	if(!DP_ADD_TEMP_VAL(device, nvidia_compatible_2))
+		return 0;
+	if(!DP_ADD_TEMP_VAL(device, nvidia_device_type_2))
+		return 0;
+	if(!DP_ADD_TEMP_VAL(device, nvidia_name_2))
+		return 0;
+	if(!DP_ADD_TEMP_VAL(device, nvidia_adress_cells_2))
+		return 0;
+	if(!DP_ADD_TEMP_VAL(device, nvidia_size_cells_2))
+		return 0;
+	if(!DP_ADD_TEMP_VAL(device, nvidia_hwctrl_params_2))
+		return 0;
+	if(!DP_ADD_TEMP_VAL(device, nvidia_hwsensor_params_2))
+		return 0;
+	if(!DP_ADD_TEMP_VAL(device, nvidia_reg_2))
+		return 0;
+#endif
 	len = sprintf(tmp, "Slot-%x", devices_number);
 	devprop_add_value(device, "AAPL,slot-name", (uint8_t *)tmp, len + 1);
 	devices_number++;

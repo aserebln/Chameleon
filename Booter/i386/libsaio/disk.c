@@ -1598,7 +1598,7 @@ BVRef newFilteredBVChain(int minBIOSDev, int maxBIOSDev, unsigned int allowFlags
        * Looking for "Hide Partition" entries in "hd(x,y) hd(n,m)" format
        * to be able to hide foreign partitions from the boot menu.
        */
-	if (getValueForKey(kHidePartition, &val, &len, &bootInfo->bootConfig) && value != NULL) {
+	if (getValueForKey(kHidePartition, &val, &len, &bootInfo->bootConfig) && val != NULL) {
     	  sprintf(devsw, "hd(%d,%d)", BIOS_DEV_UNIT(newBVR), newBVR->part_no);
     	  if (strstr(val, devsw) != NULL) {
             newBVR->visible = false;

@@ -560,7 +560,7 @@ static uint32_t load_nvidia_bios_file(const char *filename, uint8_t *buf, int bu
 	}
 	size = read(fd, (char *)buf, size);
 	close(fd);
-	return size;
+	return size > 0 ? size : 0;
 }
 
 static int devprop_add_nvidia_template(struct DevPropDevice *device)
@@ -644,9 +644,14 @@ bool setup_nvidia_devprop(pci_dt_t *nvda_dev)
 	rom = MALLOC(NVIDIA_ROM_SIZE);
 	sprintf(nvFilename, "/Extra/%04x_%04x.rom", (uint16_t)nvda_dev->vendor_id, (uint16_t)nvda_dev->device_id);
 	if (getBoolForKey(kUseNvidiaROM, &doit, &bootInfo->bootConfig) && doit) {
-		verbose("Looking for nvidia video bios file %s\n", nvFilename);
 		nvBiosOveride = load_nvidia_bios_file(nvFilename, rom, NVIDIA_ROM_SIZE);
-		DBG("%s Signature 0x%02x%02x %d bytes\n", nvFilename, rom[0], rom[1], nvBiosOveride);
+		if (nvBiosOveride > 0) {
+			verbose("Using nVidia Video BIOS File %s (%d Bytes)\n", nvFilename, nvBiosOveride);
+			DBG("%s Signature 0x%02x%02x %d bytes\n", nvFilename, rom[0], rom[1], nvBiosOveride);
+		} else {
+			printf("ERROR: unable to open Vidia Video BIOS File %s\n", nvFilename);
+			return false;
+		}
 	} else {
 		// Otherwise read bios from card
 		nvBiosOveride = 0;
@@ -676,8 +681,8 @@ bool setup_nvidia_devprop(pci_dt_t *nvda_dev)
 				
 				// Valid Signature ?
 				if (rom[0] != 0x55 && rom[1] != 0xaa) {
-					verbose("Unable to locate video bios.\n");
-					return 0;
+					printf("ERROR: Unable to locate nVidia Video BIOS\n");
+					return false;
 				} else {
 					DBG("ROM Address 0x%x Signature 0x%02x%02x\n", nvRom, rom[0], rom[1]);
 				}
@@ -690,7 +695,7 @@ bool setup_nvidia_devprop(pci_dt_t *nvda_dev)
 	}
 
 	if ((nvPatch = patch_nvidia_rom(rom)) == PATCH_ROM_FAILED) {
-		printf("nVidia ROM Patching Failed!\n");
+		printf("ERROR: nVidia ROM Patching Failed!\n");
 		return false;
 	}
 

@@ -384,7 +384,7 @@ static uint32_t load_ati_bios_file(const char *filename, uint8_t *buf, int bufsi
 	}
 	size = read(fd, (char *)buf, size);
 	close(fd);
-	return size;
+	return size > 0 ? size : 0;
 }
 
 static char *get_ati_model(uint32_t id)
@@ -700,11 +700,13 @@ bool setup_ati_devprop(pci_dt_t *ati_dev)
 		verbose("looking for ati video bios file %s\n", tmp);
 		rom = MALLOC(0x20000);
 		rom_size = load_ati_bios_file(tmp, rom, 0x20000);
-		if (rom_size > 0x10000) {
-			rom_size = 0x10000; //we dont need rest anyway;
-		}
-		if (rom_size == 0) {
-			printf("ATI ROM File '%s' not found\n", tmp);
+		if (rom_size > 0) {
+			verbose("Using ATI Video BIOS File %s (%d Bytes)\n", tmp, rom_size);
+			if (rom_size > 0x10000) {
+				rom_size = 0x10000; //we dont need rest anyway;
+			}
+		} else {
+			printf("ERROR: unable to open ATI Video BIOS File %s\n", tmp);
 		}
 	}
 	if (rom_size == 0) {

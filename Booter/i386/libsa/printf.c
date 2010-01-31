@@ -44,7 +44,6 @@ sputc(int c, struct putc_info * pi)
     *(pi->str)++ = c;
 }
 
-/*VARARGS1*/
 int sprintf(char * str, const char * fmt, ...)
 {
     va_list ap;
@@ -56,16 +55,5 @@ int sprintf(char * str, const char * fmt, ...)
     prf(fmt, ap, sputc, &pi);
     *pi.str = '\0';
     va_end(ap);
-    return 0;
-}
-
-/*VARARGS1*/
-int slvprintf(char * str, int len, const char * fmt, va_list ap)
-{
-    struct putc_info pi;
-    pi.str = str;
-    pi.last_str = str + len - 1;
-    prf(fmt, ap, sputc, &pi);
-    *pi.str = '\0';
     return (pi.str - str);
 }

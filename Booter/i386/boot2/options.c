@@ -95,79 +95,65 @@ static bool flushKeyboardBuffer(void)
 
 static int countdown( const char * msg, int row, int timeout )
 {
-    unsigned long time;
-    int ch  = 0;
-    int col = strlen(msg) + 1;
+	unsigned long time;
+	int ch  = 0;
+	int col = strlen(msg) + 1;
 	
-    flushKeyboardBuffer();
+	flushKeyboardBuffer();
 
-	if( bootArgs->Video.v_display == VGA_TEXT_MODE )
-	{
-		moveCursor( 0, row );
+	if (bootArgs->Video.v_display == VGA_TEXT_MODE) {
+		moveCursor(0, row);
 		printf(msg);
-
 	} else {
-
 		position_t p = pos( gui.screen.width / 2 + 1 , ( gui.devicelist.pos.y + 3 ) + ( ( gui.devicelist.height - gui.devicelist.iconspacing ) / 2 ) );
-	
 		char dummy[80];
 		getBootVolumeDescription( gBootVolume, dummy, 80, true );
 		drawDeviceIcon( gBootVolume, gui.screen.pixmap, p );
 		drawStrCenteredAt( (char *) msg, &font_small, gui.screen.pixmap, gui.countdown.pos );
-		
 		// make this screen the new background
 		memcpy( gui.backbuffer->pixels, gui.screen.pixmap->pixels, gui.backbuffer->width * gui.backbuffer->height * 4 );
-		
 	}
 
 	int multi_buff = 18 * (timeout);
-    int multi = ++multi_buff;
+	int multi = ++multi_buff;
+	int lasttime=0;
 
-    int lasttime=0;
-
-    for ( time = time18(), timeout++; timeout > 0; )
-    {
-		if( time18() > lasttime)
-		{
+	for (time = time18(), timeout++; timeout > 0;) {
+		if( time18() > lasttime) {
 			multi--; 
-			lasttime=time18();
-		}		
+			lasttime = time18();
+		}
   
-        if (ch = readKeyboardStatus())
-            break;
+		if (ch = readKeyboardStatus()) {
+			break;
+		}
 
-        // Count can be interrupted by holding down shift,
-        // control or alt key
-        if ( ( readKeyboardShiftFlags() & 0x0F ) != 0 )
-		{
-            ch = 1;
-            break;
-        }
+		// Count can be interrupted by holding down shift,
+		// control or alt key
+		if ((readKeyboardShiftFlags() & 0x0F) != 0) {
+			ch = 1;
+			break;
+		}
 
-        if ( time18() >= time )
-        {
-            time += 18;
-            timeout--;
+		if (time18() >= time) {
+			time += 18;
+			timeout--;
 
-			if( bootArgs->Video.v_display == VGA_TEXT_MODE )
-			{
+			if( bootArgs->Video.v_display == VGA_TEXT_MODE ) {
 				moveCursor( col, row );
 				printf("(%d) ", timeout);
 			}
-        }
-	
-		if( bootArgs->Video.v_display == GRAPHICS_MODE )
-		{
+		}
+
+		if (bootArgs->Video.v_display == GRAPHICS_MODE) {
 			drawProgressBar( gui.screen.pixmap, 100, gui.progressbar.pos , ( multi * 100 / multi_buff ) );
 			gui.redraw = true;
 			updateVRAM();
 		}
+	}
+	flushKeyboardBuffer();
 
-    }
-
-    flushKeyboardBuffer();
-
-    return ch;
+	return ch;
 }
 
 //==========================================================================
@@ -905,7 +891,7 @@ int getBootOptions(bool firstRun)
 	// Show the boot prompt.
 	showPrompt = (gDeviceCount == 0) || (menuBVR->flags & kBVFlagNativeBoot);
 	showBootPrompt( nextRow, showPrompt );
-	
+
 	do {
 		if (bootArgs->Video.v_display == GRAPHICS_MODE) {
 			// redraw background

@@ -1495,10 +1495,7 @@ void drawProgressBar(pixmap_t *blendInto, uint16_t width, position_t p, uint8_t 
 		return;
 	
 	pixmap_t progressbar;
-	progressbar.pixels=MALLOC(width * 4 * buff->height);
-	if(!progressbar.pixels)
-		return; 
-	
+	progressbar.pixels = MALLOC(width * 4 * buff->height);
 	progressbar.width = width;
 	progressbar.height = buff->height;
 

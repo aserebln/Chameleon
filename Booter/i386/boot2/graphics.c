@@ -32,11 +32,6 @@
 #include "gui.h"
 #include "IOHibernatePrivate.h"
 
-/*
- * for spinning disk
- */
-static int currentIndicator = 0;
-
 int previewTotalSectors = 0;
 int previewLoadedSectors = 0;
 uint8_t *previewSaveunder = 0;
@@ -1100,40 +1095,32 @@ int initGraphicsMode ()
 // setVideoMode
 //
 // Set the video mode to VGA_TEXT_MODE or GRAPHICS_MODE.
-
-void
-setVideoMode( int mode, int drawgraphics)
+void setVideoMode(int mode, int allowFBTextMode)
 {
-    unsigned long params[4];
-    int           count;
-    int           err = errSuccess;
+	unsigned long params[4];
+	int           count;
+	int           err = errSuccess;
 
-    if ( mode == GRAPHICS_MODE )
-    {
-  		if ( (err=initGraphicsMode ()) == errSuccess ) {
-        if (gVerboseMode) {
-            // Tell the kernel to use text mode on a linear frame buffer display
-            bootArgs->Video.v_display = FB_TEXT_MODE;
-        } else {
-            bootArgs->Video.v_display = GRAPHICS_MODE;
-        }
-      }
-    }
+	if (mode == GRAPHICS_MODE) {
+		if ((err = initGraphicsMode()) == errSuccess) {
+			if (gVerboseMode && allowFBTextMode) {
+				// Tell the kernel to use text mode on a linear frame buffer display
+				bootArgs->Video.v_display = FB_TEXT_MODE;
+			} else {
+				bootArgs->Video.v_display = GRAPHICS_MODE;
+			}
+		}
+	}
 
-    if ( (mode == VGA_TEXT_MODE) || (err != errSuccess) )
-    {
-        count = getNumberArrayFromProperty( kTextModeKey, params, 2 );
-        if ( count < 2 )
-        {
-            params[0] = 80;  // Default text mode is 80x25.
-            params[1] = 25;
-        }
-
-        setVESATextMode( params[0], params[1], 4 );
-        bootArgs->Video.v_display = VGA_TEXT_MODE;
-    }
-
-    currentIndicator = 0;
+	if ((mode == VGA_TEXT_MODE) || (err != errSuccess)) {
+		count = getNumberArrayFromProperty(kTextModeKey, params, 2);
+		if (count < 2) {
+			params[0] = 80;  // Default text mode is 80x25.
+			params[1] = 25;
+		}
+		setVESATextMode( params[0], params[1], 4 );
+		bootArgs->Video.v_display = VGA_TEXT_MODE;
+	}
 }
 
 void getGraphicModeParams(unsigned long params[]) {
@@ -1170,53 +1157,51 @@ int getVideoMode(void)
 
 //==========================================================================
 // Display and clear the activity indicator.
-
-static char indicator[] = {'-', '\\', '|', '/', '-', '\\', '|', '/', '\0'};
-#define kNumIndicators (sizeof(indicator) - 1)
+static char indicator[] = {'-', '\\', '|', '/', '-', '\\', '|', '/'};
 
 // To prevent a ridiculously fast-spinning indicator,
 // ensure a minimum of 1/9 sec between animation frames.
 #define MIN_TICKS 2
 
-void
-spinActivityIndicator(int sectors)
+void spinActivityIndicator(int sectors)
 {
-    static unsigned long lastTickTime = 0;
-    unsigned long        currentTickTime = time18();
-    static char          string[3] = {'\0', '\b', '\0'};
-    
-	if (previewTotalSectors && previewSaveunder)
-	{
+	static unsigned long	lastTickTime = 0;
+	static int		currentIndicator = 0;
+	unsigned long		currentTickTime;
+
+	if (previewTotalSectors && previewSaveunder) {
 		int blob, lastBlob;
 
 		lastBlob = (previewLoadedSectors * kIOHibernateProgressCount) / previewTotalSectors;
 		previewLoadedSectors+=sectors;
 		blob = (previewLoadedSectors * kIOHibernateProgressCount) / previewTotalSectors;
-		
-		if (blob!=lastBlob)
-			updateProgressBar (previewSaveunder, lastBlob, blob);
+
+		if (blob!=lastBlob) {
+			updateProgressBar(previewSaveunder, lastBlob, blob);
+		}
 		return;
 	}
- 
-	if (currentTickTime < lastTickTime + MIN_TICKS)
-        return;
-    else
-        lastTickTime = currentTickTime;
 
-    if ( getVideoMode() == VGA_TEXT_MODE )
-    {
-        if (currentIndicator >= kNumIndicators) currentIndicator = 0;
-        string[0] = indicator[currentIndicator++];
-        printf(string);
-    }
+	if (gVerboseMode) {
+		currentTickTime = time18();
+		if (currentTickTime < lastTickTime + MIN_TICKS) {
+			return;
+		} else {
+			lastTickTime = currentTickTime;
+		}
+
+		if (getVideoMode() == VGA_TEXT_MODE) {
+			if (currentIndicator >= sizeof(indicator)) {
+				currentIndicator = 0;
+			}
+			printf("%c\b", indicator[currentIndicator++]);
+		}
+	}
 }
 
-void
-clearActivityIndicator( void )
+void clearActivityIndicator(void)
 {
-    if ( getVideoMode() == VGA_TEXT_MODE )
-    {
-        printf(" \b");
-    }
+	if (gVerboseMode && getVideoMode() == VGA_TEXT_MODE) {
+		printf(" \b");
+	}
 }
-

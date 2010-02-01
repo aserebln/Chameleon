@@ -183,20 +183,17 @@ static int ExecKernel(void *binary)
     // If we were in text mode, switch to graphics mode.
     // This will draw the boot graphics unless we are in
     // verbose mode.
-
     if(gVerboseMode)
-      setVideoMode( GRAPHICS_MODE, 0 );
+      setVideoMode(GRAPHICS_MODE, 1);
     else
       drawBootGraphics();
-	
-    finalizeBootStruct();
-    
-    // Jump to kernel's entry point. There's no going back now.
 
+    finalizeBootStruct();
+
+    // Jump to kernel's entry point. There's no going back now.
     startprog( kernelEntry, bootArgs );
 
     // Not reached
-
     return 0;
 }
 
@@ -225,15 +222,15 @@ void boot(int biosdev)
 // next boot device on its list.
 void common_boot(int biosdev)
 {
-    int      status;
-    char     *bootFile;
-    unsigned long adler32;
-    bool     quiet;
-    bool     firstRun = true;
-    bool     instantMenu;
-    bool     rescanPrompt;
-    unsigned int allowBVFlags = kBVFlagSystemVolume|kBVFlagForeignBoot;
-    unsigned int denyBVFlags = kBVFlagEFISystem;
+    const char		*val;
+    char		*bootFile;
+    unsigned long	adler32;
+    int			status;
+    int			cnt;
+    bool		quiet;
+    bool		firstRun = true;
+    bool		instantMenu;
+    bool		rescanPrompt;
 
     // Set reminder to unload the PXE base code. Neglect to unload
     // the base code will result in a hang or kernel panic.
@@ -256,9 +253,6 @@ void common_boot(int biosdev)
     printf("after video_mode\n");
 #endif
 
-    // Scan and record the system's hardware information.
-    scan_platform();
-
     // First get info for boot volume.
     scanBootVolumes(gBIOSDev, 0);
     bvChain = getBVChainForBIOSDev(gBIOSDev);
@@ -270,6 +264,16 @@ void common_boot(int biosdev)
     if (getBoolForKey(kQuietBootKey, &quiet, &bootInfo->bootConfig) && quiet) {
         gBootMode |= kBootModeQuiet;
     }
+
+    // Get verbosity at early stage to allow a quiet booter
+    if (getValueForKey(kKernelFlagsKey, &val, &cnt, &bootInfo->bootConfig)) {
+	    if (getValueForBootKey(val, kVerboseModeFlag, &val, &cnt)) {
+		    gVerboseMode = true;
+	    }
+    }
+
+    // Scan and record the system's hardware information.
+    scan_platform();
 
     // Override firstRun to get to the boot menu instantly by setting "Instant Menu"=y in system config
     if (getBoolForKey(kInsantMenuKey, &instantMenu, &bootInfo->bootConfig) && instantMenu) {
@@ -306,7 +310,7 @@ void common_boot(int biosdev)
     }
 
     // Create a separated bvr chain using the specified filters.
-    bvChain = newFilteredBVChain(0x80, 0xFF, allowBVFlags, denyBVFlags, &gDeviceCount);
+    bvChain = newFilteredBVChain(0x80, 0xFF, kBVFlagSystemVolume|kBVFlagForeignBoot, kBVFlagEFISystem, &gDeviceCount);
 
     gBootVolume = selectBootVolume(bvChain);
 
@@ -320,8 +324,12 @@ void common_boot(int biosdev)
     // Override useGUI default
     getBoolForKey(kGUIKey, &useGUI, &bootInfo->bootConfig);
     if (useGUI) {
-        /* XXX AsereBLN handle error */
+	if (gVerboseMode) {
+		printf("Switching to GUI mode in 3 seconds...\n");
+		sleep(3);
+	}
 	initGUI();
+        /* XXX AsereBLN handle error */
     }
 
     setBootGlobals(bvChain);
@@ -344,14 +352,12 @@ void common_boot(int biosdev)
         char     bootFileSpec[512];
 		
         // Initialize globals.
-
         sysConfigValid = false;
         gErrors        = false;
 
-        status = getBootOptions(firstRun);
+	getBootOptions(firstRun);
         firstRun = false;
-        if (status == -1) continue;
-		 
+
         status = processBootOptions();
         // Status==1 means to chainboot
         if ( status ==  1 ) break;
@@ -366,7 +372,7 @@ void common_boot(int biosdev)
             if (gEnableCDROMRescan)
               rescanBIOSDevice(gBIOSDev);
               
-            bvChain = newFilteredBVChain(0x80, 0xFF, allowBVFlags, denyBVFlags, &gDeviceCount);
+            bvChain = newFilteredBVChain(0x80, 0xFF, kBVFlagSystemVolume|kBVFlagForeignBoot, kBVFlagEFISystem, &gDeviceCount);
             setBootGlobals(bvChain);
           }
           continue;

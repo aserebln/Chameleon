@@ -32,12 +32,6 @@
 #include "nbp_cmd.h"
 #include <pexpert/i386/boot.h>
 
-#if DEBUG
-#define DEBUG_DISK(x)    printf x
-#else
-#define DEBUG_DISK(x)
-#endif
-
 typedef unsigned long entry_t;
 
 typedef struct {

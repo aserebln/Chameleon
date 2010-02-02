@@ -28,8 +28,9 @@
 
 #include <sys/reboot.h>
 #include <sys/types.h>
+#include <stdbool.h>
 #include "bios.h"
-#include "nbp_cmd.h"
+#include <IOKit/IOTypes.h>
 #include <pexpert/i386/boot.h>
 
 typedef unsigned long entry_t;
@@ -237,11 +238,6 @@ enum {
 #define roundup2(x, m)  (((x) + m - 1) & ~(m - 1))
 
 #define MAKEKERNDEV(t, u, p)  MAKEBOOTDEV(t, 0, 0, u, p)
-
-enum {
-    kNetworkDeviceType = kBIOSDevTypeNetwork,
-    kBlockDeviceType   = kBIOSDevTypeHardDrive
-} gBootFileType_t;
 
 enum {
     kCursorTypeHidden    = 0x0100,

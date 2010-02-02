@@ -37,7 +37,7 @@ SAIO_OBJS = table.o asm.o bios.o biosfn.o \
 	disk.o sys.o cache.o bootstruct.o \
 	stringTable.o load.o pci.o allocate.o misc.o \
 	ufs.o ufs_byteorder.o \
-	vbe.o nbp.o hfs.o hfs_compare.o \
+	vbe.o hfs.o hfs_compare.o \
 	xml.o ntfs.o msdos.o md5c.o device_tree.o \
 	cpu.o platform.o dsdt_patcher.o \
 	smbios_patcher.o fake_efi.o ext2fs.o \

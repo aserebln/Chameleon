@@ -704,57 +704,37 @@ int readdir_ext(struct dirstuff * dirp, const char ** name, long * flags,
 
 //==========================================================================
 
-const char * systemConfigDir()
+const char *systemConfigDir(void)
 {
-    if (gBootFileType == kNetworkDeviceType)
-	return "";
-    return "/Library/Preferences/SystemConfiguration";
+	return "/Library/Preferences/SystemConfiguration";
 }
 
 //==========================================================================
 
-int gBootFileType;
-
-void scanBootVolumes( int biosdev, int * count )
+void scanBootVolumes(int biosdev, int *count)
 {
-  BVRef bvr = 0;
-
-  bvr = diskScanBootVolumes(biosdev, count);
-  if (bvr == NULL)
-  {
-    bvr = nbpScanBootVolumes(biosdev, count);
-    if (bvr != NULL)
-    {
-      gBootFileType = kNetworkDeviceType;
-    }
-  }
-  else
-  {
-    gBootFileType = kBlockDeviceType;
-  }
+	diskScanBootVolumes(biosdev, count);
 }
 
 //==========================================================================
 
 void scanDisks(int biosdev, int *count)
 {
-  #define MAX_HDD_COUNT 32
-  int bvCount;
-  int hd = 0;
+#define MAX_HDD_COUNT 32
+	int bvCount;
+	int hd = 0;
 
-  // Testing up to MAX_HDD_COUNT hard drives.
-	while(!testBiosread(0x80 + hd, 0) && hd < MAX_HDD_COUNT)
-	{
-	  bvCount = 0;
-	  scanBootVolumes(0x80 + hd, &bvCount);
-    hd++;
+	// Testing up to MAX_HDD_COUNT hard drives.
+	while (!testBiosread(0x80 + hd, 0) && hd < MAX_HDD_COUNT) {
+		bvCount = 0;
+		scanBootVolumes(0x80 + hd, &bvCount);
+		hd++;
 	}
 
-  // Also scanning CD/DVD drive.
-	if (biosDevIsCDROM(gBIOSDev))
-	{
-	  bvCount = 0;
-  	scanBootVolumes(gBIOSDev, &bvCount);
+	// Also scanning CD/DVD drive.
+	if (biosDevIsCDROM(gBIOSDev)) {
+		bvCount = 0;
+		scanBootVolumes(gBIOSDev, &bvCount);
 	}
 }
 

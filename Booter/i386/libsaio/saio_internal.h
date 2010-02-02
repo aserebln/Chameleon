@@ -137,10 +137,6 @@ extern int    checkForSupportedHardware();
 extern int	  isLaptop();
 extern void   getPlatformName(char *nameBuf);
 
-/* nbp.c */
-extern UInt32 nbpUnloadBaseCode();
-extern BVRef  nbpScanBootVolumes(int biosdev, int *count);
-
 /* stringTable.c */
 extern char * newStringFromList(char **list, int *size);
 extern int    stringLength(const char *table, int compress);
@@ -199,7 +195,6 @@ extern void   setRootVolume(BVRef volume);
 extern void   setBootGlobals(BVRef chain);
 
 extern int    gBIOSDev;
-extern int    gBootFileType;
 extern BVRef  gBootVolume;
 extern BVRef  gBIOSBootVolume;
 

@@ -83,8 +83,6 @@ bool    useGUI;
 static unsigned long Adler32(unsigned char *buffer, long length);
 
 
-static bool gUnloadPXEOnExit = false;
-
 /*
  * How long to wait (in seconds) to load the
  * kernel after displaying the "boot:" prompt.
@@ -130,71 +128,58 @@ void initialize_runtime(void)
 
 static int ExecKernel(void *binary)
 {
-    entry_t                   kernelEntry;
-    int                       ret;
+	entry_t	kernelEntry;
+	int	ret;
 
-    bootArgs->kaddr = bootArgs->ksize = 0;
+	bootArgs->kaddr = bootArgs->ksize = 0;
 
-    ret = DecodeKernel(binary,
-                       &kernelEntry,
-                       (char **) &bootArgs->kaddr,
-                       (int *)&bootArgs->ksize );
+	ret = DecodeKernel(binary, &kernelEntry, (char **)&bootArgs->kaddr, (int *)&bootArgs->ksize);
+	if (ret != 0) {
+		return ret;
+	}
 
-    if ( ret != 0 )
-        return ret;
+	// Reserve space for boot args
+	reserveKernBootStruct();
 
-    // Reserve space for boot args
-    reserveKernBootStruct();
+	// Load boot drivers from the specifed root path.
+	if (!gHaveKernelCache) {
+		LoadDrivers("/");
+	}
 
-    // Load boot drivers from the specifed root path.
+	clearActivityIndicator();
 
-    if (!gHaveKernelCache) {
-          LoadDrivers("/");
-    }
+	if (gErrors) {
+		printf("Errors encountered while starting up the computer.\n");
+		printf("Pausing %d seconds...\n", kBootErrorTimeout);
+		sleep(kBootErrorTimeout);
+	}
 
-    clearActivityIndicator();
+	setupFakeEfi();
 
-    if (gErrors) {
-        printf("Errors encountered while starting up the computer.\n");
-        printf("Pausing %d seconds...\n", kBootErrorTimeout);
-        sleep(kBootErrorTimeout);
-    }
+	verbose("Starting Darwin %s\n",( archCpuType == CPU_TYPE_I386 ) ? "x86" : "x86_64");
 
-    setupFakeEfi();
+	bool dummyVal;
+	if (getBoolForKey(kWaitForKeypressKey, &dummyVal, &bootInfo->bootConfig) && dummyVal) {
+		printf("Press any key to continue...");
+		getc();
+	}
 
-    verbose("Starting Darwin %s\n",( archCpuType == CPU_TYPE_I386 ) ? "x86" : "x86_64");
+	// If we were in text mode, switch to graphics mode.
+	// This will draw the boot graphics unless we are in
+	// verbose mode.
+	if (gVerboseMode) {
+		setVideoMode(GRAPHICS_MODE, 1);
+	} else {
+		drawBootGraphics();
+	}
 
-    // Cleanup the PXE base code.
+	finalizeBootStruct();
 
-    if ( (gBootFileType == kNetworkDeviceType) && gUnloadPXEOnExit ) {
-		if ( (ret = nbpUnloadBaseCode()) != nbpStatusSuccess )
-        {
-        	printf("nbpUnloadBaseCode error %d\n", (int) ret);
-            sleep(2);
-        }
-    }
+	// Jump to kernel's entry point. There's no going back now.
+	startprog(kernelEntry, bootArgs);
 
-    bool dummyVal;
-    if (getBoolForKey(kWaitForKeypressKey, &dummyVal, &bootInfo->bootConfig) && dummyVal) {
-	printf("Press any key to continue...");
-	getc();
-    }
-
-    // If we were in text mode, switch to graphics mode.
-    // This will draw the boot graphics unless we are in
-    // verbose mode.
-    if(gVerboseMode)
-      setVideoMode(GRAPHICS_MODE, 1);
-    else
-      drawBootGraphics();
-
-    finalizeBootStruct();
-
-    // Jump to kernel's entry point. There's no going back now.
-    startprog( kernelEntry, bootArgs );
-
-    // Not reached
-    return 0;
+	// Not reached
+	return 0;
 }
 
 //==========================================================================
@@ -231,10 +216,6 @@ void common_boot(int biosdev)
     bool		firstRun = true;
     bool		instantMenu;
     bool		rescanPrompt;
-
-    // Set reminder to unload the PXE base code. Neglect to unload
-    // the base code will result in a hang or kernel panic.
-    gUnloadPXEOnExit = true;
 
     // Record the device that the booter was loaded from.
     gBIOSDev = biosdev & kBIOSDevMask;
@@ -480,7 +461,6 @@ void common_boot(int biosdev)
         // Check for cache file.
         trycache = (((gBootMode & kBootModeSafe) == 0) &&
                     !gOverrideKernel &&
-                    (gBootFileType == kBlockDeviceType) &&
                     (gMKextName[0] == '\0') &&
                     (gBootKernelCacheFile[0] != '\0'));
 
@@ -571,11 +551,6 @@ void common_boot(int biosdev)
 				gui.devicelist.draw = true;
 				gui.redraw = true;
 			}
-            if (gBootFileType == kNetworkDeviceType) {
-                // Return control back to PXE. Don't unload PXE base code.
-                gUnloadPXEOnExit = false;
-                break;
-            }
         } else {
             /* Won't return if successful. */
             ret = ExecKernel(binary);
@@ -587,10 +562,6 @@ void common_boot(int biosdev)
 	if (getVideoMode() == GRAPHICS_MODE) {	// if we are already in graphics-mode,
 		setVideoMode(VGA_TEXT_MODE, 0);	// switch back to text mode
 	}
-    }
-	
-    if ((gBootFileType == kNetworkDeviceType) && gUnloadPXEOnExit) {
-	nbpUnloadBaseCode();
     }
 }
 

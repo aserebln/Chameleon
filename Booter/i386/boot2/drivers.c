@@ -88,7 +88,6 @@ long (*LoadExtraDrivers_p)(FileLoadDrivers_t FileLoadDrivers_p);
 static unsigned long Alder32( unsigned char * buffer, long length );
 
 static long FileLoadDrivers(char *dirSpec, long plugin);
-static long NetLoadDrivers(char *dirSpec);
 static long LoadDriverMKext(char *fileSpec);
 static long LoadDriverPList(char *dirSpec, char *name, long bundleType);
 static long LoadMatchedModules(void);
@@ -159,96 +158,68 @@ InitDriverSupport( void )
 
 //==========================================================================
 // LoadDrivers
-
-long LoadDrivers( char * dirSpec )
+long LoadDrivers(char *dirSpec)
 {
-    char dirSpecExtra[1024];
+	char dirSpecExtra[1024];
 
-    if ( InitDriverSupport() != 0 )
-        return 0;
+	if (InitDriverSupport() != 0) {
+		return 0;
+	}
 
-    // Load extra drivers if a hook has been installed.
-    if (LoadExtraDrivers_p != NULL)
-    {
-        (*LoadExtraDrivers_p)(&FileLoadDrivers);
-    }
+	// Load extra drivers if a hook has been installed.
+	if (LoadExtraDrivers_p != NULL) {
+		(*LoadExtraDrivers_p)(&FileLoadDrivers);
+	}
 
-    if ( gBootFileType == kNetworkDeviceType )
-    {
-        if (NetLoadDrivers(dirSpec) != 0) {
-            error("Could not load drivers from the network\n");
-            return -1;
-        }
-    }
-    else if ( gBootFileType == kBlockDeviceType )
-    {
-        // First try to load Extra extensions from the ramdisk if isn't aliased as bt(0,0).
-        if (gRAMDiskVolume && !gRAMDiskBTAliased)
-        {
-          strcpy(dirSpecExtra, "rd(0,0)/Extra/");
-          FileLoadDrivers(dirSpecExtra, 0);
-        }
+	// First try to load Extra extensions from the ramdisk if isn't aliased as bt(0,0).
+	if (gRAMDiskVolume && !gRAMDiskBTAliased) {
+		strcpy(dirSpecExtra, "rd(0,0)/Extra/");
+		FileLoadDrivers(dirSpecExtra, 0);
+	}
 
-        // Next try to load Extra extensions from the selected root partition.
-        strcpy(dirSpecExtra, "/Extra/");
-        if (FileLoadDrivers(dirSpecExtra, 0) != 0)
-        {
-          // If failed, then try to load Extra extensions from the boot partition
-          // in case we have a separate booter partition or a bt(0,0) aliased ramdisk.
-          if ( !(gBIOSBootVolume->biosdev == gBootVolume->biosdev  && gBIOSBootVolume->part_no == gBootVolume->part_no)
-               || (gRAMDiskVolume && gRAMDiskBTAliased) )
-          {
-			  // First try a specfic OS version folder ie 10.5
-			  sprintf(dirSpecExtra, "bt(0,0)/Extra/%s/", &gMacOSVersion);
-			  if (FileLoadDrivers(dirSpecExtra, 0) != 0)
-			  {	
-				  // Next we'll try the base
-				  strcpy(dirSpecExtra, "bt(0,0)/Extra/");
-				  FileLoadDrivers(dirSpecExtra, 0);
-			  }
-		  }
-        }
+	// Next try to load Extra extensions from the selected root partition.
+	strcpy(dirSpecExtra, "/Extra/");
+	if (FileLoadDrivers(dirSpecExtra, 0) != 0) {
+		// If failed, then try to load Extra extensions from the boot partition
+		// in case we have a separate booter partition or a bt(0,0) aliased ramdisk.
+		if (!(gBIOSBootVolume->biosdev == gBootVolume->biosdev  && gBIOSBootVolume->part_no == gBootVolume->part_no) || (gRAMDiskVolume && gRAMDiskBTAliased)) {
+			// First try a specfic OS version folder ie 10.5
+			sprintf(dirSpecExtra, "bt(0,0)/Extra/%s/", &gMacOSVersion);
+			if (FileLoadDrivers(dirSpecExtra, 0) != 0) {
+				// Next we'll try the base
+				strcpy(dirSpecExtra, "bt(0,0)/Extra/");
+				FileLoadDrivers(dirSpecExtra, 0);
+			}
+		}
+	}
 
-        // Also try to load Extensions from boot helper partitions.
-        strcpy(dirSpecExtra, "/com.apple.boot.P/System/Library/");
-        if (FileLoadDrivers(dirSpecExtra, 0) != 0)
-        {
-          strcpy(dirSpecExtra, "/com.apple.boot.R/System/Library/");
-          if (FileLoadDrivers(dirSpecExtra, 0) != 0)
-          {
-            strcpy(dirSpecExtra, "/com.apple.boot.S/System/Library/");
-            FileLoadDrivers(dirSpecExtra, 0);
-          }
-        }
+	// Also try to load Extensions from boot helper partitions.
+	strcpy(dirSpecExtra, "/com.apple.boot.P/System/Library/");
+	if (FileLoadDrivers(dirSpecExtra, 0) != 0) {
+		strcpy(dirSpecExtra, "/com.apple.boot.R/System/Library/");
+		if (FileLoadDrivers(dirSpecExtra, 0) != 0) {
+			strcpy(dirSpecExtra, "/com.apple.boot.S/System/Library/");
+			FileLoadDrivers(dirSpecExtra, 0);
+		}
+	}
 
-        if (gMKextName[0] != '\0')
-        {
-            verbose("LoadDrivers: Loading from [%s]\n", gMKextName);
-            if ( LoadDriverMKext(gMKextName) != 0 )
-            {
-                error("Could not load %s\n", gMKextName);
-                return -1;
-            }
-        }
-        else
-        {
-            strcpy(gExtensionsSpec, dirSpec);
-            strcat(gExtensionsSpec, "System/Library/");
-            FileLoadDrivers(gExtensionsSpec, 0);
-        }
-    }
-    else
-    {
-        return 0;
-    }
+	if (gMKextName[0] != '\0') {
+		verbose("LoadDrivers: Loading from [%s]\n", gMKextName);
+		if ( LoadDriverMKext(gMKextName) != 0 ) {
+			error("Could not load %s\n", gMKextName);
+			return -1;
+		}
+	} else {
+		strcpy(gExtensionsSpec, dirSpec);
+		strcat(gExtensionsSpec, "System/Library/");
+		FileLoadDrivers(gExtensionsSpec, 0);
+	}
 
-    MatchPersonalities();
+	MatchPersonalities();
+	MatchLibraries();
+	LoadMatchedModules();
 
-    MatchLibraries();
-
-    LoadMatchedModules();
-
-    return 0;
+	return 0;
 }
 
 //==========================================================================
@@ -333,42 +304,6 @@ FileLoadDrivers( char * dirSpec, long plugin )
     }
 
     return result;
-}
-
-//==========================================================================
-// 
-
-static long
-NetLoadDrivers( char * dirSpec )
-{
-    long tries;
-
-#if NODEF
-    long cnt;
-
-    // Get the name of the kernel
-    cnt = strlen(gBootFile);
-    while (cnt--) {
-        if ((gBootFile[cnt] == '\\')  || (gBootFile[cnt] == ',')) {
-        cnt++;
-        break;
-        }
-    }
-#endif
-
-    // INTEL modification
-    sprintf(gDriverSpec, "%s%s.mkext", dirSpec, bootInfo->bootFile);
-    
-    verbose("NetLoadDrivers: Loading from [%s]\n", gDriverSpec);
-    
-    tries = 3;
-    while (tries--)
-    {
-        if (LoadDriverMKext(gDriverSpec) == 0) break;
-    }
-    if (tries == -1) return -1;
-
-    return 0;
 }
 
 //==========================================================================

@@ -24,8 +24,8 @@ extern EFI_GUID gEfiAcpi20TableGuid;
 #define SMBIOS_RANGE_START      0x000F0000
 #define SMBIOS_RANGE_END        0x000FFFFF
 
-/* '_SM_' in little endian: */
-#define SMBIOS_ANCHOR_UINT32_LE 0x5f4d535f
+#define SMBIOS_ORIGINAL		0
+#define SMBIOS_PATCHED		1
 
 struct smbios_table_header 
 {
@@ -40,11 +40,9 @@ struct smbios_property
 	uint8_t table_type;
 	enum {SMSTRING, SMWORD, SMBYTE, SMOWORD} value_type;
 	int offset;
-	//union {
 	int (*auto_int) (char *name, int table_num);
 	char * (*auto_str) (char *name, int table_num);
 	char * (*auto_oword) (char *name, int table_num);
-	//};
 };
 
 struct smbios_table_description
@@ -54,7 +52,5 @@ struct smbios_table_description
 	int (*numfunc)(int tablen);
 };
 
-
-extern struct SMBEntryPoint *	getAddressOfSmbiosTable(void);
-extern struct SMBEntryPoint *	getSmbios(void);
+extern struct SMBEntryPoint	*getSMBIOS(int);
 #endif /* !__LIBSAIO_SMBIOS_PATCHER_H */

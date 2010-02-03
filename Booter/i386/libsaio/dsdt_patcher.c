@@ -23,6 +23,9 @@
 #define DBG(x...)
 #endif
 
+static uint64_t acpi10_p;
+static uint64_t acpi20_p;
+
 /* Gets the ACPI 1.0 RSDP address */
 static struct acpi_2_rsdp* getAddressOfAcpiTable()
 {

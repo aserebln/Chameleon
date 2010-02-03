@@ -249,38 +249,6 @@ struct smbios_table_description smbios_table_descriptions[]=
 	{.type=132,	.len=0x06,	.numfunc=sm_one}
 };
 
-struct SMBEntryPoint *getAddressOfSmbiosTable(void)
-{
-	/* First see if we can even find the damn SMBIOS table
-	 * The logic here is to start at 0xf0000 and end at 0xfffff iterating 16 bytes at a time looking
-	 * for the SMBIOS entry-point structure anchor (literal ASCII "_SM_").
-	 */
-	void *smbios_addr = (void*)SMBIOS_RANGE_START;
-
-	for (; (smbios_addr<=(void*)SMBIOS_RANGE_END) && (*(uint32_t*)smbios_addr!=SMBIOS_ANCHOR_UINT32_LE); smbios_addr+=16) ;
-	if (smbios_addr <= (void*)SMBIOS_RANGE_END) {
-		/* NOTE: The specification does not specifically state what to do in the event of finding an
-		 * SMBIOS anchor on an invalid table.  It might be better to move this code into the for loop
-		 * so that searching can continue.
-		 */
-		uint8_t csum = checksum8(smbios_addr, sizeof(struct SMBEntryPoint));
-		/* The table already contains the checksum so we merely need to see if its checksum is now zero. */
-		if (csum != 0) {
-			printf("Found SMBIOS anchor but bad table checksum.  Assuming no SMBIOS.\n");
-			sleep(5);
-			smbios_addr = 0;
-		}
-	} else {
-		/* If this happens, it's possible that a PnP BIOS call can be done to retrieve the address of the table.
-		 * The latest versions of the spec state that modern programs should not even attempt to do this.
-		 */
-		printf("Unable to find SMBIOS table.\n");
-		sleep(5);
-		smbios_addr = 0;
-	}
-	return smbios_addr;
-}
-
 /* Compute necessary space requirements for new smbios */
 struct SMBEntryPoint *smbios_dry_run(struct SMBEntryPoint *origsmbios)
 {
@@ -690,13 +658,55 @@ void smbios_real_run(struct SMBEntryPoint * origsmbios, struct SMBEntryPoint * n
 	verbose("Patched DMI Table\n");
 }
 
-struct SMBEntryPoint *getSmbios(void)
+static struct SMBEntryPoint *getAddressOfSmbiosTable(void)
 {
-	struct SMBEntryPoint *orig_address;
-	struct SMBEntryPoint *new_address;
+	void			*smbios_addr;
+	struct SMBEntryPoint	*smbios;
 
-	orig_address=getAddressOfSmbiosTable();
-	new_address = smbios_dry_run(orig_address);
-	smbios_real_run(orig_address, new_address);
-	return new_address;
+	/* 
+	 * The logic is to start at 0xf0000 and end at 0xfffff iterating 16 bytes at a time looking
+	 * for the SMBIOS entry-point structure anchor (literal ASCII "_SM_").
+	 */
+	smbios_addr = (void *)SMBIOS_RANGE_START;
+	while (smbios_addr <= (void *)SMBIOS_RANGE_END) {
+		smbios = smbios_addr;
+		if (memcmp(smbios->anchor, "_SM_", sizeof(smbios->anchor)) == 0 &&
+		    memcmp(smbios->dmi.anchor, "_DMI_", sizeof(smbios->dmi.anchor)) == 0 &&
+		    checksum8(smbios_addr, sizeof(struct SMBEntryPoint)) == 0)
+		{
+			return smbios;
+		}
+		smbios_addr += 16;
+	}
+	printf("ERROR: Unable to find SMBIOS!\n");
+	sleep(5);
+	return NULL;
+}
+
+struct SMBEntryPoint *getSMBIOS(int which)
+{
+	static struct SMBEntryPoint *orig = NULL;
+	static struct SMBEntryPoint *patched = NULL;
+	struct SMBEntryPoint *ret;
+
+	if (orig == NULL) {
+		orig = getAddressOfSmbiosTable();
+	}
+
+	switch (which) {
+	case SMBIOS_ORIGINAL:
+		ret = orig;
+		break;
+	case SMBIOS_PATCHED:
+		if (patched == NULL) {
+			patched = smbios_dry_run(orig);
+			smbios_real_run(orig, patched);
+		}
+		ret = patched;
+		break;
+	default:
+		ret = NULL;
+		break;
+	}
+	return ret;
 }

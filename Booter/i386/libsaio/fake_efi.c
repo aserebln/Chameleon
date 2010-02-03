@@ -278,12 +278,8 @@ static char CPU_Frequency_prop[] = "CPUFrequency";
  * UUID & SystemSerial & SystemType
  */
 
-#define SYSTEM_ID_DEFAULT \
-  { \
-	0x41,0x73,0x65,0x72,0x65,0x42,0x4c,0x4e,0x66,0x75,0x63,0x6b,0x45,0x46,0x49,0x58 \
-  }
+#define SYSTEM_ID_DEFAULT {0x41, 0x73, 0x65, 0x72, 0x65, 0x42, 0x4c, 0x4e, 0x66, 0x75, 0x63, 0x6b, 0x45, 0x46, 0x49, 0x58}
 
-#define UUID_LEN	16
 static EFI_CHAR8 SystemID[UUID_LEN] = SYSTEM_ID_DEFAULT;
 static char SystemID_prop[] = "system-id";
 
@@ -303,32 +299,11 @@ static char SystemType_prop[] = "system-type";
  * SMBIOS
  */
 
-/* From Foundation/Efi/Guid/Smbios/SmBios.h */
-/* Modified to wrap Data4 array init with {} */
-#define EFI_SMBIOS_TABLE_GUID \
-  { \
-    0xeb9d2d31, 0x2d88, 0x11d3, {0x9a, 0x16, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d} \
-  }
-
-/* From Foundation/Efi/Guid/Smbios/SmBios.c */
+static uint64_t smbios_p;
 EFI_GUID const  gEfiSmbiosTableGuid = EFI_SMBIOS_TABLE_GUID;
 
-#define SMBIOS_RANGE_START      0x000F0000
-#define SMBIOS_RANGE_END        0x000FFFFF
-
-/* '_SM_' in little endian: */
-#define SMBIOS_ANCHOR_UINT32_LE 0x5f4d535f
-
-#define EFI_ACPI_TABLE_GUID \
-  { \
-    0xeb9d2d30, 0x2d88, 0x11d3, { 0x9a, 0x16, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d } \
-  }
-
-#define EFI_ACPI_20_TABLE_GUID \
-  { \
-    0x8868e871, 0xe4f1, 0x11d3, { 0xbc, 0x22, 0x0, 0x80, 0xc7, 0x3c, 0x88, 0x81 } \
-  }
-
+#define EFI_ACPI_TABLE_GUID	{0xeb9d2d30, 0x2d88, 0x11d3, {0x9a, 0x16, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d}}
+#define EFI_ACPI_20_TABLE_GUID	{0x8868e871, 0xe4f1, 0x11d3, {0xbc, 0x22, 0x0, 0x80, 0xc7, 0x3c, 0x88, 0x81}}
 EFI_GUID gEfiAcpiTableGuid = EFI_ACPI_TABLE_GUID;
 EFI_GUID gEfiAcpi20TableGuid = EFI_ACPI_20_TABLE_GUID;
 
@@ -425,7 +400,7 @@ static void setupEfiDeviceTree(void)
 /* Installs all the needed configuration table entries */
 static void setupEfiConfigurationTable(void)
 {
-	smbios_p = (EFI_PTR32)getSmbios();
+	smbios_p = (EFI_PTR32)getSMBIOS(SMBIOS_PATCHED);
 	addConfigurationTable(&gEfiSmbiosTableGuid, &smbios_p, NULL);
 
 	// Setup ACPI with DSDT overrides (mackerintel's patch)
@@ -481,8 +456,7 @@ static int getSMBIOSUUID(unsigned char *uuid)
 	int			isZero;
 	int			isOnes;
 	
-	smbios = getAddressOfSmbiosTable();	/* checks for _SM_ anchor and table header checksum */
-	if (memcmp( &smbios->dmi.anchor[0], "_DMI_", 5) != 0) {
+	if ((smbios = getSMBIOS(SMBIOS_PATCHED)) == NULL) {
 		return 0;
 	}
 	//verbose(">>> SMBIOSAddr=0x%08x\n", smbios);
@@ -548,14 +522,11 @@ static void setupEfiGetOverrideConfig( void )
 	if (loadConfigFile(value, &bootInfo->smbiosConfig) == -1) {
 		verbose("No SMBIOS replacement found\n");
 	}
-	if (getValueForKey("SMUUID", &value, &len, &bootInfo->smbiosConfig) && value != NULL && stringToUUID(value, uuid) == 0) {
-		verbose("Using SMUUID='%s' from smbios.plist as system-id\n", value);
-		memcpy(SystemID, uuid, UUID_LEN);
-	} else if (getValueForKey(kSystemID, &value, &len, &bootInfo->bootConfig) && value != NULL && value[0] != 'N' && value[0] != 'n' && stringToUUID(value, uuid) == 0) {
+	if (getValueForKey(kSystemID, &value, &len, &bootInfo->bootConfig) && value != NULL && value[0] != 'N' && value[0] != 'n' && stringToUUID(value, uuid) == 0) {
 		verbose("Using system-id='%s' from com.apple.Boot.plist as system-id\n", value);
 		memcpy(SystemID, uuid, UUID_LEN);
 	} else if (getSMBIOSUUID(uuid)) {
-		verbose("Using original SMBIOS UUID='%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x' as system-id\n",
+		verbose("Using SMBIOS UUID='%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x' as system-id\n",
 			uuid[0],uuid[1],uuid[2],uuid[3],uuid[4],uuid[5],uuid[6],uuid[7],
 			uuid[8],uuid[9],uuid[10],uuid[11],uuid[12],uuid[13],uuid[14],uuid[15]);
 		memcpy(SystemID, uuid, UUID_LEN);

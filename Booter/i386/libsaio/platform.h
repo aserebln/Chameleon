@@ -68,6 +68,8 @@ extern void scan_platform(void);
 /* Maximum number of SPD bytes */
 #define MAX_SPD_SIZE			256
 
+#define UUID_LEN			16
+
 typedef struct _RamSlotInfo_t {
 	bool		InUse;
 	uint8_t		Type;
@@ -103,6 +105,11 @@ typedef struct _PlatformInfo_t {
 		uint64_t		Frequency;		// Ram Frequency
 	} RAM;
 
+	struct DMI {
+		int			NoMemorySlots;		// Table 6: number of memory slots polulated by SMBIOS
+		uint8_t			UUID[UUID_LEN];		// Table 1: UUID
+		char			ProductName[32];	// Table 1: product name
+	} DMI;
 	uint8_t				Type;			// System Type: 1=Desktop, 2=Portable... according ACPI2.0 (FACP: PM_Profile)
 } PlatformInfo_t;
 

@@ -154,11 +154,13 @@ static int sm_get_cputype (char *name, int table_num)
 
 static int sm_get_memtype (char *name, int table_num)
 {
-	if (table_num < MAX_RAM_SLOTS &&
-	    Platform.RAM.DIMM[table_num].InUse &&
-	    Platform.RAM.DIMM[table_num].Type != 0)
-	{
-		return Platform.RAM.DIMM[table_num].Type;
+	int	map;
+
+	if (table_num < MAX_RAM_SLOTS) {
+		map = Platform.DMI.DIMM[table_num];
+		if (Platform.RAM.DIMM[map].InUse && Platform.RAM.DIMM[map].Type != 0) {
+			return Platform.RAM.DIMM[map].Type;
+		}
 	}
 	return SMB_MEM_TYPE_DDR2;
 }
@@ -173,36 +175,42 @@ static int sm_get_memspeed (char *name, int table_num)
 
 static char *sm_get_memvendor (char *name, int table_num)
 {
-	if (table_num < MAX_RAM_SLOTS &&
-	    Platform.RAM.DIMM[table_num].InUse &&
-	    strlen(Platform.RAM.DIMM[table_num].Vendor) > 0)
-	{
-		DBG("Vendor[%d]='%s'\n", table_num, Platform.RAM.DIMM[table_num].Vendor);
-		return Platform.RAM.DIMM[table_num].Vendor;
+	int	map;
+
+	if (table_num < MAX_RAM_SLOTS) {
+		map = Platform.DMI.DIMM[table_num];
+		if (Platform.RAM.DIMM[map].InUse && strlen(Platform.RAM.DIMM[map].Vendor) > 0) {
+			DBG("Vendor[%d]='%s'\n", table_num, Platform.RAM.DIMM[map].Vendor);
+			return Platform.RAM.DIMM[map].Vendor;
+		}
 	}
 	return "N/A";
 }
 	
 static char *sm_get_memserial (char *name, int table_num)
 {
-	if (table_num < MAX_RAM_SLOTS &&
-	    Platform.RAM.DIMM[table_num].InUse &&
-	    strlen(Platform.RAM.DIMM[table_num].SerialNo) > 0)
-	{
-		DBG("SerialNo[%d]='%s'\n", table_num, Platform.RAM.DIMM[table_num].SerialNo);
-		return Platform.RAM.DIMM[table_num].SerialNo;
+	int	map;
+
+	if (table_num < MAX_RAM_SLOTS) {
+		map = Platform.DMI.DIMM[table_num];
+		if (Platform.RAM.DIMM[map].InUse && strlen(Platform.RAM.DIMM[map].SerialNo) > 0) {
+			DBG("SerialNo[%d]='%s'\n", table_num, Platform.RAM.DIMM[map].SerialNo);
+			return Platform.RAM.DIMM[map].SerialNo;
+		}
 	}
 	return "N/A";
 }
 
 static char *sm_get_mempartno (char *name, int table_num)
 {
-	if (table_num < MAX_RAM_SLOTS &&
-	    Platform.RAM.DIMM[table_num].InUse &&
-	    strlen(Platform.RAM.DIMM[table_num].PartNo) > 0)
-	{
-		DBG("PartNo[%d]='%s'\n", table_num, Platform.RAM.DIMM[table_num].PartNo);
-		return Platform.RAM.DIMM[table_num].PartNo;
+	int	map;
+
+	if (table_num < MAX_RAM_SLOTS) {
+		map = Platform.DMI.DIMM[table_num];
+		if (Platform.RAM.DIMM[map].InUse && strlen(Platform.RAM.DIMM[map].PartNo) > 0) {
+			DBG("PartNo[%d]='%s'\n", table_num, Platform.RAM.DIMM[map].PartNo);
+			return Platform.RAM.DIMM[map].PartNo;
+		}
 	}
 	return "N/A";
 }

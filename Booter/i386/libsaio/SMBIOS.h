@@ -20,12 +20,6 @@
  * @APPLE_LICENSE_HEADER_END@
  */
 
-/* This file is a stripped-down version of the one found in the AppleSMBIOS project.
- * Changes:
- * - Don't use pragma pack but instead use GCC's packed attribute
- * - Remove everything except the entry point structure.  We don't need anything else.
- */
-
 #ifndef _LIBSAIO_SMBIOS_H
 #define _LIBSAIO_SMBIOS_H
 
@@ -33,37 +27,86 @@
  * Based on System Management BIOS Reference Specification v2.5
  */
 
-typedef UInt8  SMBString;
-typedef UInt8  SMBByte;
-typedef UInt16 SMBWord;
-typedef UInt32 SMBDWord;
-typedef UInt64 SMBQWord;
+typedef uint8_t		SMBString;
+typedef uint8_t		SMBByte;
+typedef uint16_t	SMBWord;
+typedef uint32_t	SMBDWord;
+typedef uint64_t	SMBQWord;
 
-struct DMIHeader{
-    SMBByte    type;
-    SMBByte    length;
-    SMBWord    handle;
+struct DMIHeader {
+	SMBByte			type;
+	SMBByte			length;
+	SMBWord			handle;
 } __attribute__((packed));
 
 struct DMIEntryPoint {
-    SMBByte    anchor[5];
-    SMBByte    checksum;
-    SMBWord    tableLength;
-    SMBDWord   tableAddress;
-    SMBWord    structureCount;
-    SMBByte    bcdRevision;
+	SMBByte			anchor[5];
+	SMBByte			checksum;
+	SMBWord			tableLength;
+	SMBDWord		tableAddress;
+	SMBWord			structureCount;
+	SMBByte			bcdRevision;
 } __attribute__((packed));
 
 struct SMBEntryPoint {
-    SMBByte    anchor[4];
-    SMBByte    checksum;
-    SMBByte    entryPointLength;
-    SMBByte    majorVersion;
-    SMBByte    minorVersion;
-    SMBWord    maxStructureSize;
-    SMBByte    entryPointRevision;
-    SMBByte    formattedArea[5];
-    struct DMIEntryPoint dmi;
+	SMBByte			anchor[4];
+	SMBByte			checksum;
+	SMBByte			entryPointLength;
+	SMBByte			majorVersion;
+	SMBByte			minorVersion;
+	SMBWord			maxStructureSize;
+	SMBByte			entryPointRevision;
+	SMBByte			formattedArea[5];
+	struct DMIEntryPoint	dmi;
+} __attribute__((packed));
+
+struct DMIMemoryControllerInfo {/* 3.3.6 Memory Controller Information (Type 5) */
+	struct DMIHeader	dmiHeader;
+	SMBByte			errorDetectingMethod;
+	SMBByte			errorCorrectingCapability;
+	SMBByte			supportedInterleave;
+	SMBByte			currentInterleave;
+	SMBByte			maxMemoryModuleSize;
+	SMBWord			supportedSpeeds;
+	SMBWord			supportedMemoryTypes;
+	SMBByte			memoryModuleVoltage;
+	SMBByte			numberOfMemorySlots;
+} __attribute__((packed));
+
+struct DMIMemoryModuleInfo {	/* 3.3.7 Memory Module Information (Type 6) */
+	struct DMIHeader	dmiHeader;
+	SMBByte			socketDesignation;
+	SMBByte			bankConnections;
+	SMBByte			currentSpeed;
+	SMBWord			currentMemoryType;
+	SMBByte			installedSize;
+	SMBByte			enabledSize;
+	SMBByte			errorStatus;
+} __attribute__((packed));
+
+struct DMIPhysicalMemoryArray {	/* 3.3.17 Physical Memory Array (Type 16) */
+	struct DMIHeader	dmiHeader;
+	SMBByte			location;
+	SMBByte			use;
+	SMBByte			memoryCorrectionError;
+	SMBDWord		maximumCapacity;
+	SMBWord			memoryErrorInformationHandle;
+	SMBWord			numberOfMemoryDevices;
+} __attribute__((packed));
+
+struct DMIMemoryDevice {	/* 3.3.18 Memory Device (Type 17) */
+	struct DMIHeader	dmiHeader;
+	SMBWord			physicalMemoryArrayHandle;
+	SMBWord			memoryErrorInformationHandle;
+	SMBWord			totalWidth;
+	SMBWord			dataWidth;
+	SMBWord			size;
+	SMBByte			formFactor;
+	SMBByte			deviceSet;
+	SMBByte			deviceLocator;
+	SMBByte			bankLocator;
+	SMBByte			memoryType;
+	SMBWord			typeDetail;
 } __attribute__((packed));
 
 #endif /* !_LIBSAIO_SMBIOS_H */

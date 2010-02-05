@@ -1,5 +1,6 @@
 /*
  *  platform.h
+ *  AsereBLN: reworked and extended
  *
  */
 
@@ -63,11 +64,13 @@ extern void scan_platform(void);
 #define SMB_MEM_CHANNEL_TRIPLE		3
 
 /* Maximum number of ram slots */
-#define MAX_RAM_SLOTS			8
+#define MAX_RAM_SLOTS			12
+#define RAM_SLOT_ENUMERATOR		{0, 2, 4, 1, 3, 5, 6, 8, 10, 7, 9, 11}
 
 /* Maximum number of SPD bytes */
 #define MAX_SPD_SIZE			256
 
+/* Size of SMBIOS UUID in bytes */
 #define UUID_LEN			16
 
 typedef struct _RamSlotInfo_t {
@@ -76,7 +79,6 @@ typedef struct _RamSlotInfo_t {
 	char		Vendor[64];
 	char		PartNo[64];
 	char		SerialNo[16];
-	uint8_t		spd[MAX_SPD_SIZE];
 } RamSlotInfo_t;
 
 typedef struct _PlatformInfo_t {
@@ -106,9 +108,10 @@ typedef struct _PlatformInfo_t {
 	} RAM;
 
 	struct DMI {
-		int			NoMemorySlots;		// Table 6: number of memory slots polulated by SMBIOS
-		uint8_t			UUID[UUID_LEN];		// Table 1: UUID
-		char			ProductName[32];	// Table 1: product name
+		int			MaxMemorySlots;		// number of memory slots polulated by SMBIOS
+		int			CntMemorySlots;		// number of memory slots counted
+		int			MemoryModules;		// number of memory modules installed
+		int			DIMM[MAX_RAM_SLOTS];	// Information and SPD mapping for each slot
 	} DMI;
 	uint8_t				Type;			// System Type: 1=Desktop, 2=Portable... according ACPI2.0 (FACP: PM_Profile)
 } PlatformInfo_t;

@@ -39,26 +39,6 @@ char *efi_inject_get_devprop_string(uint32_t *len)
 	return NULL;
 }
 
-/* XXX AsereBLN replace by strtoul */
-uint32_t ascii_hex_to_int(char *buff) 
-{
-	uint32_t	value = 0, i, digit;
-	for(i = 0; i < strlen(buff); i++)
-	{
-		if (buff[i] >= 48 && buff[i] <= 57)			// '0' through '9'
-			digit = buff[i] - 48;	
-		else if (buff[i] >= 65 && buff[i] <= 70)	// 'A' through 'F'
-			digit = buff[i] - 55;
-		else if (buff[i] >= 97 && buff[i] <= 102)	// 'a' through 'f'
-			digit = buff[i] - 87;
-		else
-			return value;
-		
-		value = digit + 16 * value;
-	}
-	return	value;
-}
-
 void *convertHexStr2Binary(const char *hexStr, int *outLength)
 {
   int len;
@@ -208,7 +188,7 @@ struct DevPropDevice *devprop_add_device(struct DevPropString *string, char *pat
 				numpaths = 0;
 				break;
 			}
-			device->pci_dev_path[numpaths].device =	ascii_hex_to_int(buff);
+			device->pci_dev_path[numpaths].device = strtoul(buff, NULL, 16);
 			
 			x += 3; // 0x
 			curr = x;
@@ -223,7 +203,7 @@ struct DevPropDevice *devprop_add_device(struct DevPropString *string, char *pat
 				numpaths = 0;
 				break;
 			}
-			device->pci_dev_path[numpaths].function = ascii_hex_to_int(buff); // TODO: find dev from char *path
+			device->pci_dev_path[numpaths].function = strtoul(buff, NULL, 16);
 			
 			numpaths++;
 		}

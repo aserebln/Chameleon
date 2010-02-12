@@ -625,7 +625,7 @@ struct dirstuff * vol_opendir(BVRef bvr, const char * path)
     if (dirp == NULL)
         goto error;
 
-    dirp->dir_path = newString(path);
+    dirp->dir_path = strdup(path);
     if (dirp->dir_path == NULL)
         goto error;
 
@@ -653,7 +653,7 @@ struct dirstuff * opendir(const char * path)
     if (dirp == NULL)
         goto error;
 
-    dirp->dir_path = newString(dirPath);
+    dirp->dir_path = strdup(dirPath);
     if (dirp->dir_path == NULL)
         goto error;
 

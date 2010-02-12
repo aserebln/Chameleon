@@ -91,6 +91,7 @@ extern int    ptol(const char * str);
 extern int    strlen(const char * str);
 extern char * strcat(char * s1, const char * s2);
 extern char * strncat(char * s1, const char * s2, size_t n);
+extern char * strdup(const char *s1);
 
 #if STRNCASECMP
 extern int    strncasecmp(const char * s1, const char * s2, size_t n);

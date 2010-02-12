@@ -698,14 +698,6 @@ int loadHelperConfig(config_file_t *config)
 	return ret;
 }
 
-char * newString(const char * oldString)
-{
-    if ( oldString )
-        return strcpy(MALLOC(strlen(oldString)+1), oldString);
-    else
-        return NULL;
-}
-
 /*
  * Extracts the next argument from the command line, double quotes are allowed here.
  */

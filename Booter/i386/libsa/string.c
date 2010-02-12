@@ -241,6 +241,11 @@ char *strcat(char *s1, const char *s2)
 	return(strncat(s1, s2, strlen(s2)));
 }
 
+char *strdup(const char *s1)
+{
+	return strcpy(MALLOC(strlen(s1) + 1), s1);
+}
+
 #if STRNCASECMP
 int strncasecmp(const char *s1, const char *s2, size_t len)
 {

@@ -95,7 +95,8 @@ const char *nvidia_hwsensor_params_2[]	=	{ "@2,hwsensor-params-version",	"0x0200
 const char *nvidia_reg_2[]		=	{ "@2,reg",		"0x02000000" };
 #endif
 
-static uint8_t default_NVCAP[]= {
+#define NVCAP_LEN	20
+static uint8_t default_NVCAP[NVCAP_LEN]= {
 	0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0d, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0a,
 	0x00, 0x00, 0x00, 0x00
@@ -316,6 +317,8 @@ static struct nv_chipsets_t NVKnownChipsets[] = {
 	{ 0x10DE06E9, "GeForce 9300M GS" },
 	{ 0x10DE06EA, "Quadro NVS 150M" },
 	{ 0x10DE06EB, "Quadro NVS 160M" },
+	{ 0x10DE087D, "ION 9400M" },
+	{ 0x10DE087E, "ION LE" },
 	{ 0x10DE0A20, "GeForce GT220" },
 	{ 0x10DE0A60, "GeForce G210" },
 	{ 0x10DE0A65, "GeForce 210" },
@@ -610,6 +613,31 @@ static int devprop_add_nvidia_template(struct DevPropDevice *device)
 	return 1;
 }
 
+int hex2bin(const char *hex, uint8_t *bin, int len)
+{
+	char	*p;
+	int	i;
+	char	buf[3];
+
+	if (hex == NULL || bin == NULL || len <= 0 || strlen(hex) != len * 2) {
+		printf("[ERROR] bin2hex input error\n");
+		return -1;
+	}
+
+	buf[2] = '\0';
+	p = (char *) hex;
+	for (i=0; i<len; i++) {
+		if (p[0] == '\0' || p[1] == '\0' || !isxdigit(p[0]) || !isxdigit(p[1])) {
+			printf("[ERROR] bin2hex '%s' syntax error\n", hex);
+			return -2;
+		}
+		buf[0] = *p++;
+		buf[1] = *p++;
+		bin[i] = (unsigned char) strtoul(buf, NULL, 16);
+	}
+	return 0;
+}
+
 bool setup_nvidia_devprop(pci_dt_t *nvda_dev)
 {
 	struct DevPropDevice		*device;
@@ -623,9 +651,12 @@ bool setup_nvidia_devprop(pci_dt_t *nvda_dev)
 	uint32_t			bar[7];
 	uint32_t			boot_display;
 	int				nvPatch;
+	int				len;
 	char				biosVersion[32];
 	char				nvFilename[32];
+	char				kNVCAP[12];
 	char				*model;
+	const char			*value;
 	bool				doit;
 
 	devicepath = get_pci_dev_path(nvda_dev);
@@ -727,9 +758,25 @@ bool setup_nvidia_devprop(pci_dt_t *nvda_dev)
 
 	videoRam *= 1024;
 	sprintf(biosVersion, "xx.xx.xx - %s", (nvBiosOveride > 0) ? nvFilename : "internal");
-	
+
+	sprintf(kNVCAP, "NVCAP_%04x", nvda_dev->device_id);
+	if (getValueForKey(kNVCAP, &value, &len, &bootInfo->bootConfig) && len == NVCAP_LEN * 2) {
+		uint8_t	new_NVCAP[NVCAP_LEN];
+
+		if (hex2bin(value, new_NVCAP, NVCAP_LEN) == 0) {
+			verbose("Using user supplied NVCAP for %s :: %s\n", model, devicepath);
+			memcpy(default_NVCAP, new_NVCAP, NVCAP_LEN);
+		}
+	}
+	verbose("NVCAP: %02x%02x%02x%02x-%02x%02x%02x%02x-%02x%02x%02x%02x-%02x%02x%02x%02x-%02x%02x%02x%02x\n",
+		default_NVCAP[0], default_NVCAP[1], default_NVCAP[2], default_NVCAP[3],
+		default_NVCAP[4], default_NVCAP[5], default_NVCAP[6], default_NVCAP[7],
+		default_NVCAP[8], default_NVCAP[9], default_NVCAP[10], default_NVCAP[11],
+		default_NVCAP[12], default_NVCAP[13], default_NVCAP[14], default_NVCAP[15],
+		default_NVCAP[16], default_NVCAP[17], default_NVCAP[18], default_NVCAP[19]);
+
 	devprop_add_nvidia_template(device);
-	devprop_add_value(device, "NVCAP", default_NVCAP, 20);
+	devprop_add_value(device, "NVCAP", default_NVCAP, NVCAP_LEN);
 	devprop_add_value(device, "VRAM,totalsize", (uint8_t*)&videoRam, 4);
 	devprop_add_value(device, "model", (uint8_t*)model, strlen(model) + 1);
 	devprop_add_value(device, "rom-revision", (uint8_t*)biosVersion, strlen(biosVersion) + 1);

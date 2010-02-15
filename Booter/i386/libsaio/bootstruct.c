@@ -38,12 +38,11 @@ boot_args         *bootArgs;
 PrivateBootInfo_t *bootInfo;
 Node              *gMemoryMapNode;
 
-static char platformName[64];
+static char platformName[] = "ACPI";
 
 void initKernBootStruct( void )
 {
     Node *node;
-    int nameLen;
     static int init_done = 0;
 
     if ( !init_done )
@@ -83,10 +82,8 @@ void initKernBootStruct( void )
         if (node == 0) {
             stop("Couldn't create root node");
         }
-        getPlatformName(platformName);
-        nameLen = strlen(platformName) + 1;
-        DT__AddProperty(node, "compatible", nameLen, platformName);
-        DT__AddProperty(node, "model", nameLen, platformName);
+        DT__AddProperty(node, "compatible", sizeof(platformName), platformName);
+        DT__AddProperty(node, "model", sizeof(platformName), platformName);
 
         gMemoryMapNode = DT__FindNode("/chosen/memory-map", true);
 

@@ -107,14 +107,3 @@ void enableA20()
     /* wait until done */
     flushKeyboardInputBuffer();
 }
-
-//==========================================================================
-// Return the platform name for this hardware.
-//
-#ifndef BOOT1
-void
-getPlatformName(char *nameBuf)
-{
-    strcpy(nameBuf, "ACPI");
-}
-#endif

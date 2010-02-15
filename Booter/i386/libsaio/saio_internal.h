@@ -133,7 +133,6 @@ long AllocateMemoryRange(char * rangeName, long start, long length, long type);
 
 /* misc.c */
 extern void   enableA20(void);
-extern void   getPlatformName(char *nameBuf);
 
 /* stringTable.c */
 extern char * newStringFromList(char **list, int *size);

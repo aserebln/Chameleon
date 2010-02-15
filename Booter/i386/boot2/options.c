@@ -1257,15 +1257,6 @@ processBootOptions()
         strlcpy( gRootDevice, val, (cnt + 1));
     }
 
-    /*
-     * Removed. We don't need this anymore.
-     *
-    if (!processBootArgument(kPlatformKey, cp, configKernelFlags, bootInfo->config, &argP, &cntRemaining, gPlatformName)) {
-        getPlatformName(gPlatformName);
-        copyArgument(kPlatformKey, gPlatformName, strlen(gPlatformName), &argP, &cntRemaining);
-    }
-    */
-
     if (!getValueForBootKey(cp, kSafeModeFlag, &val, &cnt) &&
         !getValueForBootKey(configKernelFlags, kSafeModeFlag, &val, &cnt)) {
         if (gBootMode & kBootModeSafe) {

@@ -71,39 +71,39 @@
 //==========================================================================
 // Enable A20 gate to be able to access memory above 1MB
 
-static inline void flushKeyboardInputBuffer()
+static inline void flushKeyboardInputBuffer(void)
 {
-    unsigned char ret;
-    /* Apparently all flags on means that they're invalid and that the code
-       should stop trying to check them because they'll never change */
-    do
-    {
-        ret = inb(PORT_B);
-    } while( (ret != 0xff) && (ret & KB_INFULL));
+	unsigned char ret;
+	/* Apparently all flags on means that they're invalid and that the code
+	   should stop trying to check them because they'll never change */
+	do {
+		ret = inb(PORT_B);
+	} while( (ret != 0xff) && (ret & KB_INFULL));
 }
 
-void enableA20()
+void enableA20(void)
 {
-    /* make sure that the input buffer is empty */
-    flushKeyboardInputBuffer();
+	/* make sure that the input buffer is empty */
+	flushKeyboardInputBuffer();
 
-    /* make sure that the output buffer is empty */
-    if (inb(PORT_B) & KB_OUTFULL)
-        (void)inb(PORT_A);
+	/* make sure that the output buffer is empty */
+	if (inb(PORT_B) & KB_OUTFULL) {
+		inb(PORT_A);
+	}
 
-    /* make sure that the input buffer is empty */
-    flushKeyboardInputBuffer();
+	/* make sure that the input buffer is empty */
+	flushKeyboardInputBuffer();
 
-    /* write output port */
-    outb(PORT_B, CMD_WOUT);
-    delay(100);
+	/* write output port */
+	outb(PORT_B, CMD_WOUT);
+	delay(100);
 
-    /* wait until command is accepted */
-    flushKeyboardInputBuffer();
+	/* wait until command is accepted */
+	flushKeyboardInputBuffer();
 
-    outb(PORT_A, KB_A20);
-    delay(100);
+	outb(PORT_A, KB_A20);
+	delay(100);
 
-    /* wait until done */
-    flushKeyboardInputBuffer();
+	/* wait until done */
+	flushKeyboardInputBuffer();
 }

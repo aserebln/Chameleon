@@ -124,19 +124,6 @@ void setupDeviceProperties(Node *node)
   }
 }
 
-uint16_t dp_swap16(uint16_t toswap)
-{
-	return (((toswap & 0x00FF) << 8) | ((toswap & 0xFF00) >> 8));
-}
-
-uint32_t dp_swap32(uint32_t toswap)
-{
-	return  ((toswap & 0x000000FF) << 24) |
-			((toswap & 0x0000FF00) << 8 ) |
-			((toswap & 0x00FF0000) >> 8 ) |
-			((toswap & 0xFF000000) >> 24);
-}	
-
 struct DevPropString *devprop_create_string(void)
 {
 	string = (struct DevPropString*)MALLOC(sizeof(struct DevPropString));
@@ -318,29 +305,29 @@ char *devprop_generate_string(struct DevPropString *string)
 	if(!buffer)
 		return NULL;
 
-	sprintf(buffer, "%08x%08x%04x%04x", dp_swap32(string->length), string->WHAT2,
-			dp_swap16(string->numentries), string->WHAT3);
+	sprintf(buffer, "%08x%08x%04x%04x", swap32(string->length), string->WHAT2,
+			swap16(string->numentries), string->WHAT3);
 	buffer += 24;
 	int i = 0, x = 0;
 	
 	while(i < string->numentries)
 	{
-		sprintf(buffer, "%08x%04x%04x", dp_swap32(string->entries[i]->length),
-				dp_swap16(string->entries[i]->numentries), string->entries[i]->WHAT2);
+		sprintf(buffer, "%08x%04x%04x", swap32(string->entries[i]->length),
+				swap16(string->entries[i]->numentries), string->entries[i]->WHAT2);
 		
 		buffer += 16;
 		sprintf(buffer, "%02x%02x%04x%08x%08x", string->entries[i]->acpi_dev_path.type,
 				string->entries[i]->acpi_dev_path.subtype,
-				dp_swap16(string->entries[i]->acpi_dev_path.length),
+				swap16(string->entries[i]->acpi_dev_path.length),
 				string->entries[i]->acpi_dev_path._HID,
-				dp_swap32(string->entries[i]->acpi_dev_path._UID));
+				swap32(string->entries[i]->acpi_dev_path._UID));
 
 		buffer += 24;
 		for(x=0;x < string->entries[i]->num_pci_devpaths; x++)
 		{
 			sprintf(buffer, "%02x%02x%04x%02x%02x", string->entries[i]->pci_dev_path[x].type,
 					string->entries[i]->pci_dev_path[x].subtype,
-					dp_swap16(string->entries[i]->pci_dev_path[x].length),
+					swap16(string->entries[i]->pci_dev_path[x].length),
 					string->entries[i]->pci_dev_path[x].function,
 					string->entries[i]->pci_dev_path[x].device);
 			buffer += 12;
@@ -348,7 +335,7 @@ char *devprop_generate_string(struct DevPropString *string)
 		
 		sprintf(buffer, "%02x%02x%04x", string->entries[i]->path_end.type,
 				string->entries[i]->path_end.subtype,
-				dp_swap16(string->entries[i]->path_end.length));
+				swap16(string->entries[i]->path_end.length));
 		
 		buffer += 8;
 		uint8_t *dataptr = string->entries[i]->data;

@@ -325,11 +325,6 @@ static struct nv_chipsets_t NVKnownChipsets[] = {
 	{ 0x10DE0CA3, "GeForce GT240" }
 };
 
-static uint16_t swap16(uint16_t x)
-{
-	return (((x & 0x00FF) << 8) | ((x & 0xFF00) >> 8));
-}
-
 static uint16_t read16(uint8_t *ptr, uint16_t offset)
 {
 	uint8_t ret[2];
@@ -339,11 +334,6 @@ static uint16_t read16(uint8_t *ptr, uint16_t offset)
 }
 
 #if 0
-static uint32_t swap32(uint32_t x)
-{
-	return ((x & 0x000000FF) << 24) | ((x & 0x0000FF00) << 8 ) | ((x & 0x00FF0000) >> 8 ) | ((x & 0xFF000000) >> 24);
-}
-
 static uint8_t  read8(uint8_t *ptr, uint16_t offset)
 { 
 	return ptr[offset];

@@ -107,3 +107,23 @@ void enableA20(void)
 	/* wait until done */
 	flushKeyboardInputBuffer();
 }
+
+int hex2bin(const char *hex, uint8_t *bin, int len)
+{
+	char	*p;
+	int	i;
+	char	buf[3];
+
+	buf[2] = '\0';
+	p = (char *) hex;
+	for (i=0; i<len; i++) {
+		if (p[0] == '\0' || p[1] == '\0' || !isxdigit(p[0]) || !isxdigit(p[1])) {
+			printf("[ERROR] bin2hex '%s' syntax error\n", hex);
+			return -1;
+		}
+		buf[0] = *p++;
+		buf[1] = *p++;
+		bin[i] = (unsigned char) strtoul(buf, NULL, 16);
+	}
+	return 0;
+}

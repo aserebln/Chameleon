@@ -70,9 +70,6 @@ extern void scan_platform(void);
 /* Maximum number of SPD bytes */
 #define MAX_SPD_SIZE			256
 
-/* Size of SMBIOS UUID in bytes */
-#define UUID_LEN			16
-
 typedef struct _RamSlotInfo_t {
 	bool		InUse;
 	uint8_t		Type;

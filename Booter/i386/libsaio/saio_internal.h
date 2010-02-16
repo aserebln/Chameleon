@@ -133,6 +133,7 @@ long AllocateMemoryRange(char * rangeName, long start, long length, long type);
 
 /* misc.c */
 extern void   enableA20(void);
+extern int hex2bin(const char *hex, uint8_t *bin, int len);
 
 /* stringTable.c */
 extern char * newStringFromList(char **list, int *size);
